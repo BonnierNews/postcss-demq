@@ -1,40 +1,111 @@
 var postcss = require('postcss')
-var mqParser = require('postcss-media-query-parser').default
 
 module.exports = postcss.plugin('postcss-demq', function (opts) {
-  opts.minWidth = opts.minWidth || 0
-  opts.maxWidth = opts.maxWidth || Infinity
+  opts = opts || {}
 
   return function (root) {
     root.walkAtRules('media', function (atRule) {
-      var mqList = mqParser(atRule.params)
-      mqList.nodes.forEach(function (mq) {
-        mq.nodes.forEach(function (condition) {
-          console.log(condition.nodes[0], condition.nodes[2])
-        })
-      })
+      var params = Params(atRule.params)
+
+      if (!params.match()) {
+        atRule.remove()
+        return
+      }
+
+      var newParams = params.render()
+      if (newParams) {
+        atRule.params = newParams
+        return
+      }
+
+      atRule.replaceWith(atRule.nodes)
     })
   }
 
-  function isInRange ($minWidth, $maxWidth) {
-    var widths = [$minWidth, $maxWidth].map(convert)
-    var minWidth = widths[0]
-    var maxWidth = widths[1]
+  function Params (value) {
+    var queries = value.split(/,\s?/)
+      .map(function (queryString) {
+        return Query(queryString)
+      })
 
-    if (!minWidth) return widths.some(gteMinWidth)
-    if (!maxWidth) return widths.some(lteMaxWidth)
-    return widths.some(inRange)
-
-    function inRange (width) {
-      return gteMinWidth(width) && lteMaxWidth(width)
+    return {
+      match: match,
+      render: render
     }
 
-    function gteMinWidth (width) {
-      return width >= opts.minWidth
+    function match () {
+      return queries
+        .some(function (query) {
+          return query.match()
+        })
     }
 
-    function lteMaxWidth (width) {
-      return width <= opts.maxWidth
+    function render () {
+      return queries
+        .map(function (query) {
+          return query.render()
+        })
+        .filter(Boolean)
+        .join(', ')
     }
+  }
+
+  function Query (queryString) {
+    var query = queryString.split(/\s+and\s/)
+      .map(Condition)
+      .reduce(mergeConditions, {})
+
+    return {
+      match: match,
+      render: render
+    }
+
+    function mergeConditions (sum, condition) {
+      return Object.assign(sum, condition)
+    }
+
+    function match () {
+      var widths = [query.minWidth, query.maxWidth]
+
+      if (!query.minWidth) return widths.some(gteMinWidth)
+      if (!query.maxWidth) return widths.some(lteMaxWidth)
+      return widths.some(inRange)
+
+      function inRange (width) {
+        return gteMinWidth(width) && lteMaxWidth(width)
+      }
+
+      function gteMinWidth (width) {
+        return width >= (opts.minWidth || width)
+      }
+
+      function lteMaxWidth (width) {
+        return width <= (opts.maxWidth || width)
+      }
+    }
+
+    function render () {
+      if (!match()) return null
+
+      var useQueryMinWidth = query.minWidth && (!opts.minWidth || (query.minWidth > opts.minWidth))
+      var useQueryMaxWidth = query.maxWidth && (!opts.maxWidth || (query.maxWidth < opts.maxWidth))
+      if (!useQueryMinWidth && !useQueryMaxWidth) return null
+
+      var conditions = []
+      if (useQueryMinWidth) conditions.push('(min-width: ' + query.minWidth + 'px)')
+      if (useQueryMaxWidth) conditions.push('(max-width: ' + query.maxWidth + 'px)')
+
+      return conditions.join(' and ')
+    }
+  }
+
+  function Condition (conditionString) {
+    var parsed = /(min|max)-width\s?:\s?(\d+px)/.exec(conditionString)
+    var type = parsed && parsed[1]
+    var value = parsed && parsed[2] && parseInt(parsed[2])
+    var condition = {}
+    condition[type + 'Width'] = value
+
+    return condition
   }
 })
