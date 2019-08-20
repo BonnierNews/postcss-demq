@@ -19,9 +19,7 @@
   },
   "homepage": "https://github.com/jonaswalden/postcss-demq",
   "dependencies": {
-    "parse-css-dimension": "^1.1.0",
-    "postcss": "^7.0.6",
-    "postcss-media-query-parser": "^0.2.3"
+    "postcss": "^7.0.6"
   },
   "devDependencies": {
     "@logux/eslint-config": "^27.0.0",
@@ -35,7 +33,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.0",
-    "jest": "^23.6.0"
+    "jest": "^24.9.0"
   },
   "eslintConfig": {
     "extends": "eslint-config-postcss/es5"
