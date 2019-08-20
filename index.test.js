@@ -3,6 +3,7 @@ var postcss = require('postcss')
 var plugin = require('./')
 
 function run (input, opts) {
+  opts.from = 'kladd'
   return postcss([plugin(opts)])
     .process(input)
     .then(function (result) {

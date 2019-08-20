@@ -2,10 +2,11 @@ var postcss = require('postcss')
 
 module.exports = postcss.plugin('postcss-demq', function (opts) {
   opts = opts || {}
+  var mqParser = MQParser(opts)
 
   return function (root) {
     root.walkAtRules('media', function (atRule) {
-      var params = Params(atRule.params)
+      var params = mqParser(atRule)
 
       if (!params.match()) {
         atRule.remove()
@@ -21,12 +22,18 @@ module.exports = postcss.plugin('postcss-demq', function (opts) {
       atRule.replaceWith(atRule.nodes)
     })
   }
+})
 
-  function Params (value) {
-    var queries = value.split(/,\s?/)
-      .map(function (queryString) {
-        return Query(queryString)
-      })
+function MQParser (opts) {
+  return parse
+
+  function parse (atRule) {
+    return Params(atRule.params)
+  }
+
+  function Params (paramsString) {
+    var queries = paramsString.split(/,\s?/)
+      .map(Query)
 
     return {
       match: match,
@@ -51,51 +58,28 @@ module.exports = postcss.plugin('postcss-demq', function (opts) {
   }
 
   function Query (queryString) {
-    var query = queryString.split(/\s+and\s/)
+    var conditions = queryString.split(/\s+and\s/)
       .map(Condition)
-      .reduce(mergeConditions, {})
 
     return {
       match: match,
       render: render
     }
 
-    function mergeConditions (sum, condition) {
-      return Object.assign(sum, condition)
-    }
-
     function match () {
-      var widths = [query.minWidth, query.maxWidth]
-
-      if (!query.minWidth) return widths.some(gteMinWidth)
-      if (!query.maxWidth) return widths.some(lteMaxWidth)
-      return widths.some(inRange)
-
-      function inRange (width) {
-        return gteMinWidth(width) && lteMaxWidth(width)
-      }
-
-      function gteMinWidth (width) {
-        return width >= (opts.minWidth || width)
-      }
-
-      function lteMaxWidth (width) {
-        return width <= (opts.maxWidth || width)
-      }
+      return conditions
+        .some(function (condition) {
+          return condition.match()
+        })
     }
 
     function render () {
-      if (!match()) return null
-
-      var useQueryMinWidth = query.minWidth && (!opts.minWidth || (query.minWidth > opts.minWidth))
-      var useQueryMaxWidth = query.maxWidth && (!opts.maxWidth || (query.maxWidth < opts.maxWidth))
-      if (!useQueryMinWidth && !useQueryMaxWidth) return null
-
-      var conditions = []
-      if (useQueryMinWidth) conditions.push('(min-width: ' + query.minWidth + 'px)')
-      if (useQueryMaxWidth) conditions.push('(max-width: ' + query.maxWidth + 'px)')
-
-      return conditions.join(' and ')
+      return conditions
+        .map(function (condition) {
+          return condition.render()
+        })
+        .filter(Boolean)
+        .join(' and ')
     }
   }
 
@@ -103,9 +87,27 @@ module.exports = postcss.plugin('postcss-demq', function (opts) {
     var parsed = /(min|max)-width\s?:\s?(\d+px)/.exec(conditionString)
     var type = parsed && parsed[1]
     var value = parsed && parsed[2] && parseInt(parsed[2])
-    var condition = {}
-    condition[type + 'Width'] = value
 
-    return condition
+    return {
+      match: match,
+      render: render
+    }
+
+    function match () {
+      var gteMinWidth = value >= (opts.minWidth || 0)
+      var lteMaxWidth = value <= (opts.maxWidth || Infinity)
+
+      return gteMinWidth && lteMaxWidth
+    }
+
+    function render () {
+      if (type === 'min') {
+        if (!opts.minWidth) return null
+        return value > opts.minWidth ? conditionString : null
+      } else {
+        if (!opts.maxWidth) return null
+        return value < opts.maxWidth ? conditionString : null
+      }
+    }
   }
-})
+}
