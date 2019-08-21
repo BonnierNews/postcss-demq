@@ -97,17 +97,15 @@ function MQParser (opts) {
       var gteMinWidth = value >= (opts.minWidth || 0)
       var lteMaxWidth = value <= (opts.maxWidth || Infinity)
 
-      return gteMinWidth && lteMaxWidth
+      return (type === 'min') ? lteMaxWidth : gteMinWidth
     }
 
     function render () {
-      if (type === 'min') {
-        if (!opts.minWidth) return null
-        return value > opts.minWidth ? conditionString : null
-      } else {
-        if (!opts.maxWidth) return null
-        return value < opts.maxWidth ? conditionString : null
-      }
+      var gtMinWidth = value > (opts.minWidth || 0)
+      var ltMaxWidth = value < (opts.maxWidth || Infinity)
+      var useQuery = (type === 'min') ? gtMinWidth : ltMaxWidth
+
+      return useQuery ? conditionString : null
     }
   }
 }
