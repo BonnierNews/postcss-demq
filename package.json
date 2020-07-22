@@ -1,7 +1,7 @@
 {
   "name": "postcss-demq",
   "version": "0.0.0",
-  "description": "PostCSS plugin De-media querify your CSS",
+  "description": "PostCSS plugin de-media querify your CSS",
   "keywords": [
     "postcss",
     "css",
@@ -19,25 +19,30 @@
   },
   "homepage": "https://github.com/jonaswalden/postcss-demq",
   "dependencies": {
-    "postcss": "^7.0.32",
-    "postcss-media-query-parser": "^0.2.3"
+    "postcss": "^7.0.32"
   },
   "devDependencies": {
     "@logux/eslint-config": "^40.0.1",
     "eslint": "^7.5.0",
     "eslint-config-postcss": "^4.0.0",
     "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-es5": "^1.5.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.18.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-prefer-let": "^1.0.2",
+    "eslint-plugin-prettierx": "^0.12.1",
+    "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.1",
-    "jest": "^26.1.0"
+    "eslint-plugin-unicorn": "^21.0.0",
+    "jest": "^26.1.0",
+    "typescript": "^3.9.7"
   },
   "eslintConfig": {
-    "extends": "eslint-config-postcss/es5"
+    "extends": "eslint-config-postcss"
+  },
+  "engines": {
+    "node": ">=8.0.0"
   },
   "jest": {
     "testEnvironment": "node"
