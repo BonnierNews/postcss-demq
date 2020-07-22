@@ -19,7 +19,7 @@ it('leaves unscoped css untouched', async () => {
   expect(result).toEqual(input)
 })
 
-const minWidthVariants = [/*'(width >= N)',*/ '(min-width: N)']
+const minWidthVariants = ['(width >= N)', '(N <= width)', '(min-width: N)']
 minWidthVariants.forEach(condition => {
   describe(`@media ${condition}`, () => {
     let input =
@@ -50,7 +50,7 @@ minWidthVariants.forEach(condition => {
   })
 })
 
-const maxWidthVariants = [/*'(width <= N)',*/ '(max-width: N)']
+const maxWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
 maxWidthVariants.forEach(condition => {
   describe(`@media ${condition}`, () => {
     let input =

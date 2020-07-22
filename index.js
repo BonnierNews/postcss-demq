@@ -52,7 +52,10 @@ function MQParser (opts) {
   }
 
   function Query (queryString) {
-    let conditions = queryString.split(/\s+and\s/).map(Condition)
+    let conditions = queryString
+      .replace(/([<=>]+)\s+width\s+([<=>]+)/, '$1 width) and (width $2')
+      .split(/\s+and\s+/)
+      .map(Condition)
 
     return {
       match,
@@ -72,9 +75,11 @@ function MQParser (opts) {
   }
 
   function Condition (conditionString) {
-    let parsed = /(min|max)-width\s?:\s?(\d+px)/.exec(conditionString)
-    let type = parsed && parsed[1]
-    let value = parsed && parsed[2] && parseInt(parsed[2])
+    let minWidth = opts.minWidth || 0
+    let maxWidth = opts.maxWidth || Infinity
+    let { lt, gt, eq, value } = conditionString.includes(':')
+      ? parseRegular()
+      : parseRange()
 
     return {
       match,
@@ -82,18 +87,56 @@ function MQParser (opts) {
     }
 
     function match () {
-      let gteMinWidth = value >= (opts.minWidth || 0)
-      let lteMaxWidth = value <= (opts.maxWidth || Infinity)
+      let gteMinWidth = value >= minWidth
+      let lteMaxWidth = value <= maxWidth
 
-      return type === 'min' ? lteMaxWidth : gteMinWidth
+      return gt ? lteMaxWidth : gteMinWidth
     }
 
     function render () {
-      let gtMinWidth = value > (opts.minWidth || 0)
-      let ltMaxWidth = value < (opts.maxWidth || Infinity)
-      let useQuery = type === 'min' ? gtMinWidth : ltMaxWidth
+      let gtMinWidth = value > minWidth
+      let ltMaxWidth = value < maxWidth
+      let useQuery = gt ? gtMinWidth : ltMaxWidth
 
       return useQuery ? conditionString : null
+    }
+
+    function parseRegular () {
+      let parts = /(?:(min|max)-)?width\s?:\s?(\d+\w)/.exec(conditionString)
+      if (!parts) return null
+
+      let [, comparatorPart, valuePart] = parts
+      return {
+        lt: comparatorPart === 'max',
+        gt: comparatorPart === 'min',
+        eq: true,
+        value: parseInt(valuePart)
+      }
+    }
+
+    function parseRange () {
+      let parts = /(?:(\d+\w+)\s+([<=>]+)\s*?)?width(?:\s*?([<=>]+)\s+(\d+\w+))?/.exec(
+        conditionString
+      )
+      if (!parts) return null
+
+      let [
+        ,
+        leftValuePart,
+        leftComparatorPart,
+        rightComparatorPart,
+        rightValuePart
+      ] = parts
+      return {
+        lt: leftComparatorPart
+          ? leftComparatorPart.includes('>')
+          : rightComparatorPart.includes('<'),
+        gt: leftComparatorPart
+          ? leftComparatorPart.includes('<')
+          : rightComparatorPart.includes('>'),
+        eq: (leftComparatorPart || rightComparatorPart).includes('='),
+        value: parseInt(leftValuePart || rightValuePart)
+      }
     }
   }
 }
