@@ -19,75 +19,131 @@ it('leaves unscoped css untouched', async () => {
   expect(result).toEqual(input)
 })
 
-const minWidthVariants = ['(width >= N)', '(N <= width)', '(min-width: N)']
-minWidthVariants.forEach(description => {
+const gtWidthVariants = ['(width > N)', '(N < width)']
+gtWidthVariants.forEach(description => {
   describe(`@media ${description}`, () => {
     let condition = description.replace('N', '480px')
     let input = `/* outside */ @media ${condition} { /* inside */ }`
 
-    it('removes block with min-width greater than option max-width', async () => {
+    it('removes block with min width greater than option max-width', async () => {
       let result = await run(input, { maxWidth: 320 })
       expect(result).toEqual('/* outside */')
     })
 
-    it('removes query with min-width lesser than option', async () => {
+    it('removes query with min width lesser than option', async () => {
       let result = await run(input, { minWidth: 768 })
       expect(result).toEqual('/* outside */ /* inside */')
     })
 
-    it('removes query with min-width equal to option', async () => {
+    it('preserves query with min width equal to option', async () => {
       let result = await run(input, { minWidth: 480 })
-      expect(result).toEqual('/* outside */ /* inside */')
+      expect(result).toEqual(input)
     })
 
-    it('preserves query with min-width greater than option', async () => {
+    it('preserves query with min width greater than option', async () => {
       let result = await run(input, { minWidth: 320 })
       expect(result).toEqual(input)
     })
   })
 })
 
-const maxWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
-maxWidthVariants.forEach(description => {
+const gteWidthVariants = ['(width >= N)', '(N <= width)', '(min-width: N)']
+gteWidthVariants.forEach(description => {
   describe(`@media ${description}`, () => {
     let condition = description.replace('N', '480px')
     let input = `/* outside */ @media ${condition} { /* inside */ }`
 
-    it('preserves query with max-width lesser than option', async () => {
+    it('removes block with min width greater than option max width', async () => {
+      let result = await run(input, { maxWidth: 320 })
+      expect(result).toEqual('/* outside */')
+    })
+
+    it('removes query with min width lesser than option', async () => {
+      let result = await run(input, { minWidth: 768 })
+      expect(result).toEqual('/* outside */ /* inside */')
+    })
+
+    it('removes query with min width equal to option', async () => {
+      let result = await run(input, { minWidth: 480 })
+      expect(result).toEqual('/* outside */ /* inside */')
+    })
+
+    it('preserves query with min width greater than option', async () => {
+      let result = await run(input, { minWidth: 320 })
+      expect(result).toEqual(input)
+    })
+  })
+})
+
+const ltWidthVariants = ['(width < N)', '(N > width)']
+ltWidthVariants.forEach(description => {
+  describe(`@media ${description}`, () => {
+    let condition = description.replace('N', '480px')
+    let input = `/* outside */ @media ${condition} { /* inside */ }`
+
+    it('preserves query with max width lesser than option', async () => {
       let result = await run(input, { maxWidth: 768 })
       expect(result).toEqual(input)
     })
 
-    it('removes query with max-width equal to option', async () => {
+    it('preserves query with max width equal to option', async () => {
       let result = await run(input, { maxWidth: 480 })
-      expect(result).toEqual('/* outside */ /* inside */')
+      expect(result).toEqual(input)
     })
 
-    it('removes query with max-width greater than option', async () => {
+    it('removes query with max width greater than option', async () => {
       let result = await run(input, { maxWidth: 320 })
       expect(result).toEqual('/* outside */ /* inside */')
     })
 
-    it('removes block with max-width lesser than option min-width', async () => {
+    it('removes block with max width lesser than option min width', async () => {
       let result = await run(input, { minWidth: 768 })
       expect(result).toEqual('/* outside */')
     })
   })
 })
 
-const minMaxWidthVariants = [
+const lteWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
+lteWidthVariants.forEach(description => {
+  describe(`@media ${description}`, () => {
+    let condition = description.replace('N', '480px')
+    let input = `/* outside */ @media ${condition} { /* inside */ }`
+
+    it('preserves query with max width lesser than option', async () => {
+      let result = await run(input, { maxWidth: 768 })
+      expect(result).toEqual(input)
+    })
+
+    it('removes query with max width equal to option', async () => {
+      let result = await run(input, { maxWidth: 480 })
+      expect(result).toEqual('/* outside */ /* inside */')
+    })
+
+    it('removes query with max width greater than option', async () => {
+      let result = await run(input, { maxWidth: 320 })
+      expect(result).toEqual('/* outside */ /* inside */')
+    })
+
+    it('removes block with max width lesser than option min width', async () => {
+      let result = await run(input, { minWidth: 768 })
+      expect(result).toEqual('/* outside */')
+    })
+  })
+})
+
+const gteLteWidthVariants = [
   '(width => N1) and (width <= N2)',
   '(min-width: N1) and (max-width: N2)'
   // '(N1 <= width =< N2)'
 ]
-minMaxWidthVariants.forEach(description => {
+gteLteWidthVariants.forEach(description => {
   describe(`@media ${description}`, () => {
     let conditions = description.replace('N1', '768px').replace('N2', '1024px')
     let [condition1, condition2] = conditions.split(' and ')
     let input = `/* outside */ @media ${conditions} { /* inside */ }`
 
     describe('opts.minWidth && opts.maxWidth', () => {
-      it('removes query with min-width and max-width equal to option', async () => {
+      it('removes query with min width and max-width equal to option', async () => {
         let result = await run(input, { minWidth: 768, maxWidth: 1024 })
         expect(result).toEqual('/* outside */ /* inside */')
       })
@@ -106,7 +162,7 @@ minMaxWidthVariants.forEach(description => {
         )
       })
 
-      it('preserves query with min-width and max-width within option', async () => {
+      it('preserves query with min width and max-width within option', async () => {
         let result = await run(input, { minWidth: 480, maxWidth: 1280 })
         expect(result).toEqual(input)
       })

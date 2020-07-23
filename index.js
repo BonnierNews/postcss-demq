@@ -81,24 +81,28 @@ function MQParser (opts) {
       ? parseRegular()
       : parseRange()
 
+    let eqMinWidth = value === minWidth
+    let gtMinWidth = value > minWidth
+    let eqMaxWidth = value === maxWidth
+    let ltMaxWidth = value < maxWidth
+
     return {
       match,
       render
     }
 
     function match () {
-      let gteMinWidth = value >= minWidth
-      let lteMaxWidth = value <= maxWidth
-
-      return gt ? lteMaxWidth : gteMinWidth
+      return gt ? eqMaxWidth || ltMaxWidth : eqMinWidth || gtMinWidth
     }
 
     function render () {
-      let gtMinWidth = value > minWidth
-      let ltMaxWidth = value < maxWidth
-      let useQuery = gt ? gtMinWidth : ltMaxWidth
+      let conditions = []
+      if (gt) conditions.push(gtMinWidth)
+      if (lt) conditions.push(ltMaxWidth)
+      if (!eq) conditions.push(gt ? eqMinWidth : eqMaxWidth)
+      let preserveQuery = conditions.some(condition => condition)
 
-      return useQuery ? conditionString : null
+      return preserveQuery ? conditionString : null
     }
 
     function parseRegular () {
