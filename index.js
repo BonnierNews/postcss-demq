@@ -25,6 +25,8 @@ module.exports = postcss.plugin('postcss-demq', opts => {
 })
 
 function MQParser (opts) {
+  opts = Object.assign({ minWidth: 0, maxWidth: Infinity }, opts)
+
   return parse
 
   function parse (atRule) {
@@ -63,7 +65,8 @@ function MQParser (opts) {
     }
 
     function match () {
-      return conditions.some(condition => condition.match())
+      let matchAll = conditions.length > 1
+      return conditions.some(condition => condition.match(matchAll))
     }
 
     function render () {
@@ -75,24 +78,27 @@ function MQParser (opts) {
   }
 
   function Condition (conditionString) {
-    let minWidth = opts.minWidth || 0
-    let maxWidth = opts.maxWidth || Infinity
-    let { lt, gt, eq, value } = conditionString.includes(':')
+    let { lt, gt, eq, width } = conditionString.includes(':')
       ? parseRegular()
       : parseRange()
 
-    let eqMinWidth = value === minWidth
-    let gtMinWidth = value > minWidth
-    let eqMaxWidth = value === maxWidth
-    let ltMaxWidth = value < maxWidth
+    let eqMinWidth = width === opts.minWidth
+    let gtMinWidth = width > opts.minWidth
+    let eqMaxWidth = width === opts.maxWidth
+    let ltMaxWidth = width < opts.maxWidth
 
     return {
       match,
       render
     }
 
-    function match () {
-      return gt ? eqMaxWidth || ltMaxWidth : eqMinWidth || gtMinWidth
+    function match (matchAll) {
+      let lteMaxWidth = width <= opts.maxWidth
+      let gteMinWidth = width >= opts.minWidth
+      if (matchAll) {
+        return lteMaxWidth && gteMinWidth
+      }
+      return gt ? lteMaxWidth : gteMinWidth
     }
 
     function render () {
@@ -102,19 +108,19 @@ function MQParser (opts) {
       if (!eq) conditions.push(gt ? eqMinWidth : eqMaxWidth)
       let preserveQuery = conditions.some(condition => condition)
 
-      return preserveQuery ? conditionString : null
+      return preserveQuery && conditionString
     }
 
     function parseRegular () {
       let parts = /(?:(min|max)-)?width\s?:\s?(\d+\w)/.exec(conditionString)
       if (!parts) return null
 
-      let [, comparatorPart, valuePart] = parts
+      let [, comparatorPart, widthPart] = parts
       return {
         lt: comparatorPart === 'max',
         gt: comparatorPart === 'min',
         eq: true,
-        value: parseInt(valuePart)
+        width: parseInt(widthPart)
       }
     }
 
@@ -126,10 +132,10 @@ function MQParser (opts) {
 
       let [
         ,
-        leftValuePart,
+        leftWidthPart,
         leftComparatorPart,
         rightComparatorPart,
-        rightValuePart
+        rightWidthPart
       ] = parts
       return {
         lt: leftComparatorPart
@@ -139,7 +145,7 @@ function MQParser (opts) {
           ? leftComparatorPart.includes('<')
           : rightComparatorPart.includes('>'),
         eq: (leftComparatorPart || rightComparatorPart).includes('='),
-        value: parseInt(leftValuePart || rightValuePart)
+        width: parseInt(leftWidthPart || rightWidthPart)
       }
     }
   }

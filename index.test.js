@@ -77,8 +77,8 @@ gteWidthVariants.forEach(description => {
 
 const ltWidthVariants = ['(width < N)', '(N > width)']
 ltWidthVariants.forEach(description => {
-  describe(`@media ${description}`, () => {
-    let condition = description.replace('N', '480px')
+  let condition = description.replace('N', '480px')
+  describe(`@media ${condition}`, () => {
     let input = `/* outside */ @media ${condition} { /* inside */ }`
 
     it('preserves query with max width lesser than option', async () => {
@@ -105,8 +105,8 @@ ltWidthVariants.forEach(description => {
 
 const lteWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
 lteWidthVariants.forEach(description => {
-  describe(`@media ${description}`, () => {
-    let condition = description.replace('N', '480px')
+  let condition = description.replace('N', '480px')
+  describe(`@media ${condition}`, () => {
     let input = `/* outside */ @media ${condition} { /* inside */ }`
 
     it('preserves query with max width lesser than option', async () => {
@@ -137,8 +137,8 @@ const gteLteWidthVariants = [
   // '(N1 <= width =< N2)'
 ]
 gteLteWidthVariants.forEach(description => {
-  describe(`@media ${description}`, () => {
-    let conditions = description.replace('N1', '768px').replace('N2', '1024px')
+  let conditions = description.replace('N1', '768px').replace('N2', '1024px')
+  describe(`@media ${conditions}`, () => {
     let [condition1, condition2] = conditions.split(' and ')
     let input = `/* outside */ @media ${conditions} { /* inside */ }`
 
@@ -175,6 +175,11 @@ gteLteWidthVariants.forEach(description => {
           `/* outside */ @media ${condition2} { /* inside */ }`
         )
       })
+
+      it('removes block with max width lesser than option min width', async () => {
+        let result = await run(input, { minWidth: 1280 })
+        expect(result).toEqual('/* outside */')
+      })
     })
 
     describe('opts.maxWidth', () => {
@@ -183,6 +188,11 @@ gteLteWidthVariants.forEach(description => {
         expect(result).toEqual(
           `/* outside */ @media ${condition1} { /* inside */ }`
         )
+      })
+
+      it('removes block with min width greater than option max width', async () => {
+        let result = await run(input, { maxWidth: 480 })
+        expect(result).toEqual('/* outside */')
       })
     })
   })
