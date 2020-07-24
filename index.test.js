@@ -197,3 +197,13 @@ gteLteWidthVariants.forEach(description => {
     })
   })
 })
+
+it('leaves unrelated queries untouched', async () => {
+  let input = `
+    @media print { /* print styles */ }
+    @media (orientation: landscape) { /* landscape styles */ }
+    @media (min-height: 800px) { /* height requiring styles */ }
+  `
+  let result = await run(input, { minValue: 480, maxValue: 1280 })
+  expect(result).toEqual(input)
+})

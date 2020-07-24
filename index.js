@@ -79,7 +79,6 @@ function MQParser (opts) {
 
   function Condition (conditionString) {
     let condition = parseCondition(conditionString)
-    console.log(condition, !condition && conditionString)
     let { lt, gt, eq, value } = condition || {}
 
     return {
@@ -88,6 +87,8 @@ function MQParser (opts) {
     }
 
     function match (matchAll) {
+      if (!condition) return true
+
       let lteMaxValue = value <= opts.maxValue
       let gteMinValue = value >= opts.minValue
       if (matchAll) {
@@ -97,6 +98,8 @@ function MQParser (opts) {
     }
 
     function render () {
+      if (!condition) return conditionString
+
       let tests = []
       if (gt) tests.push(value > opts.minValue)
       if (lt) tests.push(value < opts.maxValue)
