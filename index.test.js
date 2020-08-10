@@ -207,3 +207,14 @@ it('leaves unrelated queries untouched', async () => {
   let result = await run(input, { minValue: 480, maxValue: 1280 })
   expect(result).toEqual(input)
 })
+
+it('removes non-applicable media query', async () => {
+  let input =
+    '@media (max-width: 100px) and (min-width: 200px) { /* removed styles */}'
+  let result = await run(input, {
+    minValue: 75,
+    maxValue: 250
+  })
+
+  expect(result).toEqual('')
+})

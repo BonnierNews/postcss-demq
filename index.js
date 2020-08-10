@@ -66,7 +66,22 @@ function MQParser (opts) {
 
     function match () {
       let matchAll = conditions.length > 1
-      return conditions.some(condition => condition.match(matchAll))
+
+      return (
+        validate() && conditions.some(condition => condition.match(matchAll))
+      )
+    }
+
+    function validate () {
+      if (conditions.length === 1) return true
+
+      let range = conditions.sort(a => {
+        if (a.lt) return 1
+        if (a.gt) return -1
+        return 0
+      })
+
+      return range[1].value - range[0].value > 0
     }
 
     function render () {
@@ -83,7 +98,11 @@ function MQParser (opts) {
 
     return {
       match,
-      render
+      render,
+      lt,
+      gt,
+      eq,
+      value
     }
 
     function match (matchAll) {
@@ -91,6 +110,7 @@ function MQParser (opts) {
 
       let lteMaxValue = value <= opts.maxValue
       let gteMinValue = value >= opts.minValue
+
       if (matchAll) {
         return lteMaxValue && gteMinValue
       }
