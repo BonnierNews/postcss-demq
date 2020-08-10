@@ -11,13 +11,13 @@
   "scripts": {
     "test": "jest && eslint *.js"
   },
-  "author": "jonas <jonas.waldeen@gmail.com>",
+  "author": "Bonnier News",
   "license": "MIT",
-  "repository": "jonaswalden/postcss-demq",
+  "repository": "BonnierNews/demq",
   "bugs": {
-    "url": "https://github.com/jonaswalden/postcss-demq/issues"
+    "url": "https://github.com/BonnierNews/demq/issues"
   },
-  "homepage": "https://github.com/jonaswalden/postcss-demq",
+  "homepage": "https://github.com/BonnierNews/demq",
   "dependencies": {
     "postcss": "^7.0.32"
   },
