@@ -1,6 +1,6 @@
 {
   "name": "postcss-demq",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "PostCSS plugin de-media querify your CSS",
   "keywords": [
     "postcss",
@@ -11,13 +11,13 @@
   "scripts": {
     "test": "jest && eslint *.js"
   },
-  "author": "jonas <jonas.waldeen@gmail.com>",
+  "author": "Bonnier News",
   "license": "MIT",
-  "repository": "jonaswalden/postcss-demq",
+  "repository": "BonnierNews/demq",
   "bugs": {
-    "url": "https://github.com/jonaswalden/postcss-demq/issues"
+    "url": "https://github.com/BonnierNews/demq/issues"
   },
-  "homepage": "https://github.com/jonaswalden/postcss-demq",
+  "homepage": "https://github.com/BonnierNews/demq",
   "dependencies": {
     "postcss": "^7.0.32"
   },
