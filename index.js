@@ -5,32 +5,55 @@ module.exports = postcss.plugin('postcss-demq', opts => {
   let mqParser = MQParser(opts)
 
   return root => {
-    root.walkAtRules('media', atRule => {
-      let params = mqParser(atRule)
-
-      if (!params.match()) {
-        atRule.remove()
-        return
-      }
-
-      let newParams = params.render()
-      if (newParams) {
-        atRule.params = newParams
-        return
-      }
-
-      atRule.replaceWith(atRule.nodes)
-    })
+    root.walkAtRules('import', atRule => filterImportRule(atRule, mqParser))
+    root.walkAtRules('media', atRule => filterMediaRule(atRule, mqParser))
   }
 })
+
+function filterImportRule (importRule, mqParser) {
+  let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
+    importRule.params
+  )
+  let [, filePath, supportsQuery, paramsString] = parts || []
+  if (!paramsString || !paramsString.trim()) return
+
+  let params = mqParser(paramsString)
+
+  if (!params.match()) {
+    importRule.remove()
+    return
+  }
+
+  importRule.params = [filePath, supportsQuery, params.render()]
+    .filter(Boolean)
+    .map(partString => partString.trim())
+    .join(' ')
+}
+
+function filterMediaRule (mediaRule, mqParser) {
+  let params = mqParser(mediaRule.params)
+
+  if (!params.match()) {
+    mediaRule.remove()
+    return
+  }
+
+  let newParams = params.render()
+  if (newParams) {
+    mediaRule.params = newParams
+    return
+  }
+
+  mediaRule.replaceWith(mediaRule.nodes)
+}
 
 function MQParser (opts) {
   opts = Object.assign({ minValue: 0, maxValue: Infinity }, opts)
 
   return parse
 
-  function parse (atRule) {
-    return Params(atRule.params)
+  function parse (params) {
+    return Params(params)
   }
 
   function Params (paramsString) {
