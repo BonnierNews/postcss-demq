@@ -198,6 +198,24 @@ gteLteWidthVariants.forEach(description => {
   })
 })
 
+
+const inapplicableRangeVariants = [
+  '(width => N1) and (width <= N2)',
+  '(min-width: N1) and (max-width: N2)'
+  // '(N1 <= width =< N2)'
+]
+inapplicableRangeVariants.forEach(description => {
+  let conditions = description.replace('N1', '1024px').replace('N2', '768px')
+  describe(`@media ${conditions}`, () => {
+    it('removes block with inapplicable range', async () => {
+      let input = `/* outside */ @media ${conditions} { /* inside */ }`
+      let result = await run(input)
+
+      expect(result).toEqual('/* outside */')
+    })
+  })
+})
+
 it('leaves unrelated queries untouched', async () => {
   let input = `
     @media print { /* print styles */ }
@@ -206,15 +224,4 @@ it('leaves unrelated queries untouched', async () => {
   `
   let result = await run(input, { minValue: 480, maxValue: 1280 })
   expect(result).toEqual(input)
-})
-
-it('removes non-applicable media query', async () => {
-  let input =
-    '@media (max-width: 100px) and (min-width: 200px) { /* removed styles */}'
-  let result = await run(input, {
-    minValue: 75,
-    maxValue: 250
-  })
-
-  expect(result).toEqual('')
 })
