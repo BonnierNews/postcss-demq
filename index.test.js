@@ -15,9 +15,9 @@ let suites = [
 suites.forEach(([atRuleType, Utils]) => {
   describe(`${atRuleType} at-rule`, () => {
     let gtWidthVariants = ['(width > N)', '(N < width)']
-    gtWidthVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '480px'))
+    gtWidthVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '480px'))
 
         it('removes block with min width greater than option max-width', async () => {
           await utils.assertRemoved({ maxValue: 320 })
@@ -42,9 +42,9 @@ suites.forEach(([atRuleType, Utils]) => {
     })
 
     let gteWidthVariants = ['(width >= N)', '(N <= width)', '(min-width: N)']
-    gteWidthVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '480px'))
+    gteWidthVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '480px'))
 
         it('removes block with min width greater than option max width', async () => {
           await utils.assertRemoved({ maxValue: 320 })
@@ -65,9 +65,9 @@ suites.forEach(([atRuleType, Utils]) => {
     })
 
     let ltWidthVariants = ['(width < N)', '(N > width)']
-    ltWidthVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '480px'))
+    ltWidthVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '480px'))
 
         it('preserves query with max width lesser than option', async () => {
           await utils.assertPreserved({ maxValue: 768 })
@@ -92,9 +92,9 @@ suites.forEach(([atRuleType, Utils]) => {
     })
 
     let lteWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
-    lteWidthVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '480px'))
+    lteWidthVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '480px'))
 
         it('preserves query with max width lesser than option', async () => {
           await utils.assertPreserved({ maxValue: 768 })
@@ -119,9 +119,9 @@ suites.forEach(([atRuleType, Utils]) => {
       '(min-width: N1) and (max-width: N2)'
       // '(N1 <= width =< N2)'
     ]
-    gteLteWidthVariants.forEach(description => {
-      describe(description, () => {
-        let conditions = Conditions(description, '768px', '1024px')
+    gteLteWidthVariants.forEach(variant => {
+      describe(variant, () => {
+        let conditions = Conditions(variant, '768px', '1024px')
         let [condition1, condition2] = conditions.split(' and ')
         let utils = Utils(conditions)
 
@@ -131,17 +131,11 @@ suites.forEach(([atRuleType, Utils]) => {
           })
 
           it('preserves partial query when lower overlap', async () => {
-            await utils.assertEdited(condition1, {
-              minValue: 480,
-              maxValue: 960
-            })
+            await utils.assertEdited(condition1, { minValue: 480, maxValue: 960 })
           })
 
           it('preserves partial query when higher overlap', async () => {
-            await utils.assertEdited(condition2, {
-              minValue: 960,
-              maxValue: 1280
-            })
+            await utils.assertEdited(condition2, { minValue: 960, maxValue: 1280 })
           })
 
           it('preserves query with min width and max-width within option', async () => {
@@ -178,13 +172,12 @@ suites.forEach(([atRuleType, Utils]) => {
       '(N1 <= width =< N2)',
       '(N1 < width < N2)'
     ]
-    inapplicableRangeVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '1024px', '768px'))
+    inapplicableRangeVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '1024px', '768px'))
 
         it('removes block with inapplicable range', async () => {
           await utils.assertRemoved()
-        })
       })
     })
 
@@ -193,9 +186,9 @@ suites.forEach(([atRuleType, Utils]) => {
       '(orientation: landscape)',
       '(min-height: N)'
     ]
-    unrelatedQueryVariants.forEach(description => {
-      describe(description, () => {
-        let utils = Utils(Conditions(description, '768px'))
+    unrelatedQueryVariants.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant, '768px'))
 
         it('leaves unrelated queries untouched', async () => {
           await utils.assertPreserved({ minValue: 480, maxValue: 1280 })
