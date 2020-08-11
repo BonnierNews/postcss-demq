@@ -35,17 +35,22 @@ suites.forEach(([atRuleType, Utils]) => {
           utils.assertRemoved(result)
         })
 
-        it('removes query with min width lesser than option', async () => {
+        it('removes query with min width lesser than option min width', async () => {
           let result = await run(utils.input, { minValue: 768 })
           utils.assertCollapsed(result)
         })
 
-        it('preserves query with min width equal to option', async () => {
+        it('removes block with min width equal to option max width', async () => {
+          let result = await run(utils.input, { maxValue: 480 })
+          utils.assertRemoved(result)
+        })
+
+        it('preserves query with min width equal to option min width', async () => {
           let result = await run(utils.input, { minValue: 480 })
           utils.assertPreserved(result)
         })
 
-        it('preserves query with min width greater than option', async () => {
+        it('preserves query with min width greater than option min width', async () => {
           let result = await run(utils.input, { minValue: 320 })
           utils.assertPreserved(result)
         })
@@ -62,17 +67,17 @@ suites.forEach(([atRuleType, Utils]) => {
           utils.assertRemoved(result)
         })
 
-        it('removes query with min width lesser than option', async () => {
+        it('removes query with min width lesser than option min width', async () => {
           let result = await run(utils.input, { minValue: 768 })
           utils.assertCollapsed(result)
         })
 
-        it('removes query with min width equal to option', async () => {
+        it('removes query with min width equal to option min width', async () => {
           let result = await run(utils.input, { minValue: 480 })
           utils.assertCollapsed(result)
         })
 
-        it('preserves query with min width greater than option', async () => {
+        it('preserves query with min width greater than option min width', async () => {
           let result = await run(utils.input, { minValue: 320 })
           utils.assertPreserved(result)
         })
@@ -92,6 +97,11 @@ suites.forEach(([atRuleType, Utils]) => {
         it('preserves query with max width equal to option', async () => {
           let result = await run(utils.input, { maxValue: 480 })
           utils.assertPreserved(result)
+        })
+
+        it('removes block with max width equal to option min width', async () => {
+          let result = await run(utils.input, { minValue: 480 })
+          utils.assertRemoved(result)
         })
 
         it('removes query with max width greater than option', async () => {
