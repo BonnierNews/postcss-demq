@@ -198,11 +198,12 @@ gteLteWidthVariants.forEach(description => {
   })
 })
 
-
 const inapplicableRangeVariants = [
+  '(width > N1) and (width < N2)',
   '(width => N1) and (width <= N2)',
-  '(min-width: N1) and (max-width: N2)'
-  // '(N1 <= width =< N2)'
+  '(min-width: N1) and (max-width: N2)',
+  '(N1 <= width =< N2)',
+  '(N1 < width < N2)'
 ]
 inapplicableRangeVariants.forEach(description => {
   let conditions = description.replace('N1', '1024px').replace('N2', '768px')
