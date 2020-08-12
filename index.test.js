@@ -131,11 +131,17 @@ suites.forEach(([atRuleType, Utils]) => {
           })
 
           it('preserves partial query when lower overlap', async () => {
-            await utils.assertEdited(condition1, { minValue: 480, maxValue: 960 })
+            await utils.assertEdited(condition1, {
+              minValue: 480,
+              maxValue: 960
+            })
           })
 
           it('preserves partial query when higher overlap', async () => {
-            await utils.assertEdited(condition2, { minValue: 960, maxValue: 1280 })
+            await utils.assertEdited(condition2, {
+              minValue: 960,
+              maxValue: 1280
+            })
           })
 
           it('preserves query with min width and max-width within option', async () => {
