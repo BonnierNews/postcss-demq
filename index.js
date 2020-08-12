@@ -55,11 +55,11 @@ function MQParser (opts) {
   return parse
 
   function parse (params) {
-    return Params(params)
+    return QueryList(params)
   }
 
-  function Params (paramsString) {
-    let queries = paramsString.split(/,\s?/).map(Query)
+  function QueryList (queryListString) {
+    let queries = queryListString.split(/,\s?/).map(Query)
 
     return {
       match,
@@ -79,10 +79,20 @@ function MQParser (opts) {
   }
 
   function Query (queryString) {
-    let conditions = queryString
+    let allConditions = queryString
       .replace(/([<=>]+)\s+width\s+([<=>]+)/, '$1 width) and (width $2')
       .split(/\s+and\s+/)
       .map(Condition)
+
+    let gtCondition = allConditions
+      .filter(c => c.gt)
+      .sort((c1, c2) => c1.value - c2.value)
+      .pop()
+    let ltCondition = allConditions
+      .filter(c => c.lt)
+      .sort((c1, c2) => c1.value - c2.value)
+      .shift()
+    let conditions = [gtCondition, ltCondition].filter(Boolean)
 
     return {
       match,
@@ -90,27 +100,21 @@ function MQParser (opts) {
     }
 
     function match () {
-      let matchAll = conditions.length > 1
+      if (!conditions.length) return true
 
+      let matchAll = conditions.length > 1
       return (
         validate() && conditions.some(condition => condition.match(matchAll))
       )
     }
 
     function validate () {
-      if (conditions.length === 1) return true
-
-      let range = conditions.sort(a => {
-        if (a.lt) return 1
-        if (a.gt) return -1
-        return 0
-      })
-
-      return range[1].value - range[0].value > 0
+      if (conditions.length < 2) return conditions.length
+      return ltCondition.value - gtCondition.value > 0
     }
 
     function render () {
-      return conditions
+      return allConditions
         .map(condition => condition.render())
         .filter(Boolean)
         .join(' and ')
