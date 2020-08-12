@@ -178,6 +178,7 @@ suites.forEach(([atRuleType, Utils]) => {
 
         it('removes block with inapplicable range', async () => {
           await utils.assertRemoved()
+        })
       })
     })
 
