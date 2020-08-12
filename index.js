@@ -10,6 +10,8 @@ module.exports = postcss.plugin('postcss-demq', opts => {
   }
 })
 
+module.exports.MQParser = MQParser
+
 function filterImportRule (importRule, mqParser) {
   let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
     importRule.params
@@ -48,7 +50,7 @@ function filterMediaRule (mediaRule, mqParser) {
 }
 
 function MQParser (opts) {
-  opts = Object.assign({ minValue: 0, maxValue: Infinity }, opts)
+  opts = Object.assign({ minValue: -Infinity, maxValue: Infinity }, opts)
 
   return parse
 
@@ -131,12 +133,15 @@ function MQParser (opts) {
     function match (matchAll) {
       if (!condition) return true
 
-      let lteMaxValue = value <= opts.maxValue
-      let gteMinValue = value >= opts.minValue
+      let [gteMinValue, lteMaxValue] = [
+        [value > opts.minValue, eq && value === opts.minValue],
+        [value < opts.maxValue, eq && value === opts.maxValue]
+      ].map(tests => tests.some(test => test))
 
       if (matchAll) {
         return lteMaxValue && gteMinValue
       }
+
       return gt ? lteMaxValue : gteMinValue
     }
 
@@ -150,7 +155,6 @@ function MQParser (opts) {
         tests.push(gt ? value === opts.minValue : value === opts.maxValue)
       }
       let preserveQuery = tests.some(test => test)
-
       return preserveQuery && conditionString
     }
   }
