@@ -17,7 +17,8 @@ suites.forEach(([atRuleType, Utils]) => {
     let gtWidthVariants = ['(width > N)', '(N < width)']
     gtWidthVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '480px'))
+        let [conditions] = Conditions(variant, '480px')
+        let utils = Utils(conditions)
 
         it('removes block with min width greater than option max-width', async () => {
           await utils.assertRemoved({ maxValue: 320 })
@@ -44,7 +45,8 @@ suites.forEach(([atRuleType, Utils]) => {
     let gteWidthVariants = ['(width >= N)', '(N <= width)', '(min-width: N)']
     gteWidthVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '480px'))
+        let [conditions] = Conditions(variant, '480px')
+        let utils = Utils(conditions)
 
         it('removes block with min width greater than option max width', async () => {
           await utils.assertRemoved({ maxValue: 320 })
@@ -67,7 +69,8 @@ suites.forEach(([atRuleType, Utils]) => {
     let ltWidthVariants = ['(width < N)', '(N > width)']
     ltWidthVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '480px'))
+        let [conditions] = Conditions(variant, '480px')
+        let utils = Utils(conditions)
 
         it('preserves query with max width lesser than option', async () => {
           await utils.assertPreserved({ maxValue: 768 })
@@ -94,7 +97,8 @@ suites.forEach(([atRuleType, Utils]) => {
     let lteWidthVariants = ['(width <= N)', '(N >= width)', '(max-width: N)']
     lteWidthVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '480px'))
+        let [conditions] = Conditions(variant, '480px')
+        let utils = Utils(conditions)
 
         it('preserves query with max width lesser than option', async () => {
           await utils.assertPreserved({ maxValue: 768 })
@@ -121,8 +125,11 @@ suites.forEach(([atRuleType, Utils]) => {
     ]
     gteLteWidthVariants.forEach(variant => {
       describe(variant, () => {
-        let conditions = Conditions(variant, '768px', '1024px')
-        let [condition1, condition2] = conditions.split(' and ')
+        let [conditions, condition1, condition2] = Conditions(
+          variant,
+          '768px',
+          '1024px'
+        )
         let utils = Utils(conditions)
 
         describe('opts.minWidth && opts.maxWidth', () => {
@@ -180,7 +187,8 @@ suites.forEach(([atRuleType, Utils]) => {
     ]
     inapplicableRangeVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '1024px', '768px'))
+        let [conditions] = Conditions(variant, '1024px', '768px')
+        let utils = Utils(conditions)
 
         it('removes block with inapplicable range', async () => {
           await utils.assertRemoved()
@@ -195,7 +203,8 @@ suites.forEach(([atRuleType, Utils]) => {
     ]
     unrelatedQueryVariants.forEach(variant => {
       describe(variant, () => {
-        let utils = Utils(Conditions(variant, '768px'))
+        let [conditions] = Conditions(variant, '768px')
+        let utils = Utils(conditions)
 
         it('leaves unrelated queries untouched', async () => {
           await utils.assertPreserved({ minValue: 480, maxValue: 1280 })
@@ -203,32 +212,30 @@ suites.forEach(([atRuleType, Utils]) => {
       })
     })
 
-    let redundantMaxWidthConditions = [
-      '(max-width: 50px) and (max-width: 150px)',
-      '(max-width: 150px) and (max-width: 50px)',
-      '(max-width: 150px) and (max-width: 50px) and (max-width: 125px)'
-    ]
-    redundantMaxWidthConditions.forEach(variant => {
-      describe(variant, () => {
-        let utils = Utils(Conditions(variant))
+    describe('correctly interprets range despite multiple gt / lt points', () => {
+      let multipleGtWidthConditions = [
+        '(width > 100px) and (width > 200px)',
+        '(width > 200px) and (width > 100px)',
+        '(width > 200px) and (width > 100px) and (width > 0px)'
+      ]
+      multipleGtWidthConditions.forEach(conditions => {
+        let utils = Utils(conditions)
 
-        it('correctly interprets range despite multiple max-width values', async () => {
-          await utils.assertEdited('(max-width: 50px)', { maxValue: 100 })
+        it(conditions, async () => {
+          await utils.assertEdited('(width > 200px)', { minValue: 150 })
         })
       })
-    })
 
-    let redundantMinWidthConditions = [
-      '(min-width: 50px) and (min-width: 150px)',
-      '(min-width: 150px) and (min-width: 50px)',
-      '(min-width: 150px) and (min-width: 25px) and (min-width: 50px)'
-    ]
-    redundantMinWidthConditions.forEach(variant => {
-      describe(variant, () => {
-        let utils = Utils(Conditions(variant))
+      let multipleLtConditions = [
+        '(width < 400px) and (width < 500px)',
+        '(width < 500px) and (width < 400px)',
+        '(width < 500px) and (width < 400px) and (width < 600px)'
+      ]
+      multipleLtConditions.forEach(conditions => {
+        let utils = Utils(conditions)
 
-        it('correctly interprets range despite multiple min-width values', async () => {
-          await utils.assertEdited('(min-width: 150px)', { minValue: 100 })
+        it(conditions, async () => {
+          await utils.assertEdited('(width < 400px)', { maxValue: 450 })
         })
       })
     })
@@ -268,24 +275,23 @@ async function assert (input, opts, expected) {
 }
 
 function Conditions (template, ...ns) {
-  if (ns.length === 1) return template.replace('N', ns[0])
-
   let conditions = template
 
-  for (let [i, n] of ns.entries()) {
-    conditions = conditions.replace(`N${i + 1}`, n)
+  if (ns.length === 1) {
+    conditions = template.replace('N', ns[0])
+  } else {
+    for (let [i, n] of ns.entries()) {
+      conditions = conditions.replace(`N${i + 1}`, n)
+    }
   }
 
-  return conditions
+  return [conditions, ...conditions.split(' and ')]
 }
 
-function run (input, opts) {
-  return postcss([plugin(opts)])
-    .process(input, {
-      from: undefined
-    })
-    .then(result => {
-      expect(result.warnings()).toHaveLength(0)
-      return result.css
-    })
+async function run (input, opts) {
+  let result = await postcss([plugin(opts)]).process(input, {
+    from: undefined
+  })
+  expect(result.warnings()).toHaveLength(0)
+  return result.css
 }

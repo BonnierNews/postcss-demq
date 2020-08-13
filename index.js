@@ -111,7 +111,7 @@ function MQParser (opts) {
 
     function validate () {
       if (conditions.length < 2) return conditions.length
-      return ltCondition.value - gtCondition.value > 0
+      return gtCondition.value < ltCondition.value
     }
 
     function render () {
