@@ -39,7 +39,11 @@
     "typescript": "^3.9.7"
   },
   "eslintConfig": {
-    "extends": "eslint-config-postcss"
+    "extends": "eslint-config-postcss",
+    "rules": {
+      "jest/valid-title": 0,
+      "multiline-ternary": 0
+    }
   },
   "engines": {
     "node": ">=8.0.0"

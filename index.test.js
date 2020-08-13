@@ -202,6 +202,36 @@ suites.forEach(([atRuleType, Utils]) => {
         })
       })
     })
+
+    let redundantMaxWidthConditions = [
+      '(max-width: 50px) and (max-width: 150px)',
+      '(max-width: 150px) and (max-width: 50px)',
+      '(max-width: 150px) and (max-width: 50px) and (max-width: 125px)'
+    ]
+    redundantMaxWidthConditions.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant))
+
+        it('correctly interprets range despite multiple max-width values', async () => {
+          await utils.assertEdited('(max-width: 50px)', { maxValue: 100 })
+        })
+      })
+    })
+
+    let redundantMinWidthConditions = [
+      '(min-width: 50px) and (min-width: 150px)',
+      '(min-width: 150px) and (min-width: 50px)',
+      '(min-width: 150px) and (min-width: 25px) and (min-width: 50px)'
+    ]
+    redundantMinWidthConditions.forEach(variant => {
+      describe(variant, () => {
+        let utils = Utils(Conditions(variant))
+
+        it('correctly interprets range despite multiple min-width values', async () => {
+          await utils.assertEdited('(min-width: 150px)', { minValue: 100 })
+        })
+      })
+    })
   })
 })
 

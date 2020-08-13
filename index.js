@@ -13,6 +13,7 @@ module.exports = postcss.plugin('postcss-demq', opts => {
 module.exports.MQParser = MQParser
 
 function filterImportRule (importRule, mqParser) {
+  // eslint-disable-next-line security/detect-unsafe-regex
   let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
     importRule.params
   )
@@ -166,6 +167,7 @@ function MQParser (opts) {
 
 function parseCondition (conditionString) {
   conditionString = normalize(conditionString)
+  // eslint-disable-next-line security/detect-unsafe-regex
   let parts = /(?:(\d+\w+)\s+([<=>]+)\s*?)?width(?:\s*?([<=>]+)\s+(\d+\w+))?/.exec(
     conditionString
   )
