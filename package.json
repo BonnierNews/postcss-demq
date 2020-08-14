@@ -17,6 +17,9 @@
   "engines": {
     "node": ">=10.0.0"
   },
+  "dependencies": {
+    "postcss": "^7.0.0"
+  },
   "devDependencies": {
     "clean-publish": "^1.1.8",
     "eslint": "^7.6.0",
@@ -26,8 +29,7 @@
     "jest": "^26.2.2",
     "jest-ci": "^0.1.1",
     "jest-cli": "^26.2.2",
-    "lint-staged": "^10.2.11",
-    "postcss": "^7.0.0"
+    "lint-staged": "^10.2.11"
   },
   "husky": {
     "hooks": {
