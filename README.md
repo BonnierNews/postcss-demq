@@ -1,4 +1,4 @@
-# PostCSS demq [![Build Status][ci-img]][ci]
+# PostCSS demq
 
 [PostCSS](https://github.com/postcss/postcss) plugin to filter media queries in your CSS.
 
