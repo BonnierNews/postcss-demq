@@ -206,8 +206,22 @@ suites.forEach(([atRuleType, Utils]) => {
         let [conditions] = Conditions(variant, '768px')
         let utils = Utils(conditions)
 
-        it('leaves unrelated queries untouched', async () => {
+        it('leaves unrelated query untouched', async () => {
           await utils.assertPreserved({ minValue: 480, maxValue: 1280 })
+        })
+      })
+    })
+
+    let nonPixelWidthVariants = [
+      '(width >= 20em) and (width =< 40em)',
+      '(width >= 20rem) and (width =< 40rem)'
+    ]
+    nonPixelWidthVariants.forEach(conditions => {
+      describe(conditions, () => {
+        let utils = Utils(conditions)
+
+        it('leaves non pixel based query untouched', async () => {
+          await utils.assertPreserved({ minValue: 25, maxValue: 35 })
         })
       })
     })

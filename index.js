@@ -168,7 +168,7 @@ function MQParser (opts) {
 function parseCondition (conditionString) {
   conditionString = normalize(conditionString)
   // eslint-disable-next-line security/detect-unsafe-regex
-  let parts = /(?:(\d+\w+)\s+([<=>]+)\s*?)?width(?:\s*?([<=>]+)\s+(\d+\w+))?/.exec(
+  let parts = /(?:(\d+px)\s+([<=>]+)\s*?)?width(?:\s*?([<=>]+)\s+(\d+px))?/.exec(
     conditionString
   )
   if (!parts) return null
@@ -180,6 +180,9 @@ function parseCondition (conditionString) {
     rightComparatorPart,
     rightValuePart
   ] = parts
+  if (!leftValuePart && !rightValuePart) return null
+  if (!leftComparatorPart && !rightComparatorPart) return null
+
   return {
     lt: leftComparatorPart
       ? leftComparatorPart.includes('>')
