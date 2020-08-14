@@ -119,9 +119,9 @@ suites.forEach(([atRuleType, Utils]) => {
     })
 
     let gteLteWidthVariants = [
-      '(width => N1) and (width <= N2)',
+      '(width >= N1) and (width <= N2)',
       '(min-width: N1) and (max-width: N2)'
-      // '(N1 <= width =< N2)'
+      // '(N1 <= width <= N2)'
     ]
     gteLteWidthVariants.forEach(variant => {
       describe(variant, () => {
@@ -132,57 +132,51 @@ suites.forEach(([atRuleType, Utils]) => {
         )
         let utils = Utils(conditions)
 
-        describe('opts.minWidth && opts.maxWidth', () => {
-          it('removes query with min width and max-width equal to option', async () => {
-            await utils.assertCollapsed({ minValue: 768, maxValue: 1024 })
-          })
+        it('removes query with min width and max-width equal to option', async () => {
+          await utils.assertCollapsed({ minValue: 768, maxValue: 1024 })
+        })
 
-          it('preserves partial query when lower overlap', async () => {
-            await utils.assertEdited(condition1, {
-              minValue: 480,
-              maxValue: 960
-            })
-          })
-
-          it('preserves partial query when higher overlap', async () => {
-            await utils.assertEdited(condition2, {
-              minValue: 960,
-              maxValue: 1280
-            })
-          })
-
-          it('preserves query with min width and max-width within option', async () => {
-            await utils.assertPreserved({ minValue: 480, maxValue: 1280 })
+        it('preserves partial query when lower overlap', async () => {
+          await utils.assertEdited(condition1, {
+            minValue: 480,
+            maxValue: 960
           })
         })
 
-        describe('opts.minWidth', () => {
-          it('preserves query max-width condition when no option', async () => {
-            await utils.assertEdited(condition2, { minValue: 768 })
-          })
-
-          it('removes block with max width lesser than option min width', async () => {
-            await utils.assertRemoved({ minValue: 1280 })
+        it('preserves partial query when higher overlap', async () => {
+          await utils.assertEdited(condition2, {
+            minValue: 960,
+            maxValue: 1280
           })
         })
 
-        describe('opts.maxWidth', () => {
-          it('preserves query min-width condition when no option', async () => {
-            await utils.assertEdited(condition1, { maxValue: 1024 })
-          })
+        it('preserves query with min width and max-width within option', async () => {
+          await utils.assertPreserved({ minValue: 480, maxValue: 1280 })
+        })
 
-          it('removes block with min width greater than option max width', async () => {
-            await utils.assertRemoved({ maxValue: 480 })
-          })
+        it('preserves query max-width condition when no option', async () => {
+          await utils.assertEdited(condition2, { minValue: 768 })
+        })
+
+        it('removes block with max width lesser than option min width', async () => {
+          await utils.assertRemoved({ minValue: 1280 })
+        })
+
+        it('preserves query min-width condition when no option', async () => {
+          await utils.assertEdited(condition1, { maxValue: 1024 })
+        })
+
+        it('removes block with min width greater than option max width', async () => {
+          await utils.assertRemoved({ maxValue: 480 })
         })
       })
     })
 
     let inapplicableRangeVariants = [
       '(width > N1) and (width < N2)',
-      '(width => N1) and (width <= N2)',
+      '(width >= N1) and (width <= N2)',
       '(min-width: N1) and (max-width: N2)',
-      '(N1 <= width =< N2)',
+      '(N1 <= width <= N2)',
       '(N1 < width < N2)'
     ]
     inapplicableRangeVariants.forEach(variant => {
@@ -213,8 +207,8 @@ suites.forEach(([atRuleType, Utils]) => {
     })
 
     let nonPixelWidthVariants = [
-      '(width >= 20em) and (width =< 40em)',
-      '(width >= 20rem) and (width =< 40rem)'
+      '(width >= 20em) and (width <= 40em)',
+      '(width >= 20rem) and (width <= 40rem)'
     ]
     nonPixelWidthVariants.forEach(conditions => {
       describe(conditions, () => {

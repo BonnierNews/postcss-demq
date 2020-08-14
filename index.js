@@ -168,7 +168,7 @@ function MQParser (opts) {
 function parseCondition (conditionString) {
   conditionString = normalize(conditionString)
   // eslint-disable-next-line security/detect-unsafe-regex
-  let parts = /(?:(\d+px)\s+([<=>]+)\s*?)?width(?:\s*?([<=>]+)\s+(\d+px))?/.exec(
+  let parts = /(?:(\d+px)\s+([<>]?=?)\s*?)?width(?:\s*?([<>]?=?)\s+(\d+px))?/.exec(
     conditionString
   )
   if (!parts) return null
