@@ -10,8 +10,6 @@ module.exports = postcss.plugin('postcss-demq', opts => {
   }
 })
 
-module.exports.MQParser = MQParser
-
 function filterImportRule (importRule, mqParser) {
   // eslint-disable-next-line security/detect-unsafe-regex
   let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
