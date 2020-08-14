@@ -1,6 +1,9 @@
-# PostCSS demq
+# PostCSS demq [![Build Status][ci-img]][ci]
 
 [PostCSS]: https://github.com/postcss/postcss
+[ci-img]:  https://travis-ci.org/bonniernews/postcss-demq.svg
+[ci]:      https://travis-ci.org/bonniernews/postcss-demq
+
 [PostCSS] plugin to filter media queries.
 
 Primary use case is transforming a fully responsive stylesheet into a smaller sheet with styles for a specific device.
