@@ -1,6 +1,6 @@
 # PostCSS demq
 
-[PostCSS](https://github.com/postcss/postcss) plugin to filter media queries in your CSS.
+[PostCSS](https://github.com/postcss/postcss) plugin to filter media queries.
 
 Primary use case is transforming a fully responsive stylesheet into a smaller sheet with styles for a specific device.
 
