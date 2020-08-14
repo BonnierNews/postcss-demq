@@ -9,46 +9,56 @@
     "media-queries"
   ],
   "scripts": {
-    "test": "jest && eslint *.js"
+    "test": "jest-ci --coverage && eslint-ci ."
   },
   "author": "Bonnier News",
   "license": "MIT",
   "repository": "BonnierNews/demq",
-  "bugs": {
-    "url": "https://github.com/BonnierNews/demq/issues"
-  },
-  "homepage": "https://github.com/BonnierNews/demq",
-  "dependencies": {
-    "postcss": "^7.0.32"
+  "engines": {
+    "node": ">=10.0.0"
   },
   "devDependencies": {
-    "@logux/eslint-config": "^40.0.1",
-    "eslint": "^7.5.0",
-    "eslint-config-postcss": "^4.0.0",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^23.18.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prefer-let": "^1.0.2",
-    "eslint-plugin-prettierx": "^0.12.1",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-security": "^1.4.0",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-unicorn": "^21.0.0",
-    "jest": "^26.1.0",
-    "typescript": "^3.9.7"
+    "clean-publish": "^1.1.8",
+    "eslint": "^7.6.0",
+    "eslint-ci": "^1.0.0",
+    "eslint-plugin-jest": "^23.20.0",
+    "husky": "^4.2.5",
+    "jest": "^26.2.2",
+    "jest-ci": "^0.1.1",
+    "jest-cli": "^26.2.2",
+    "lint-staged": "^10.2.11",
+    "postcss": "^7.0.0"
   },
-  "eslintConfig": {
-    "extends": "eslint-config-postcss",
-    "rules": {
-      "jest/valid-title": 0,
-      "multiline-ternary": 0
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
     }
   },
-  "engines": {
-    "node": ">=8.0.0"
+  "lint-staged": {
+    "*.js": "eslint --fix"
+  },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 2017
+    },
+    "env": {
+      "node": true,
+      "es6": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:jest/recommended"
+    ],
+    "rules": {
+      "jest/expect-expect": "off"
+    }
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "statements": 100
+      }
+    }
   }
 }
