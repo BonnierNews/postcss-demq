@@ -66,11 +66,15 @@ Supports syntaxes specified by the Media Query Level 3 and 4 drafts
 
 With the level 4 syntax you may specify two conditions within the same parentheses:
 
-```(200 < width < 400)```
+```css
+@import "./component.css" (200px < width < 400px);
+```
 
 Currently this will be split into two single conditions:
 
-```(200 < width) and (width < 400)```
+```css
+@import "./component.css" (200px < width) and (width < 400px);
+```
 
 It was way easier.
 
