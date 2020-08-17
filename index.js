@@ -11,7 +11,6 @@ module.exports = postcss.plugin('postcss-demq', opts => {
 })
 
 function filterImportRule (importRule, mqParser) {
-  // eslint-disable-next-line security/detect-unsafe-regex
   let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
     importRule.params
   )
@@ -134,6 +133,7 @@ function MQParser (opts) {
     }
 
     function match (matchAll) {
+      /* istanbul ignore next */
       if (!condition) return true
 
       let [gteMinValue, lteMaxValue] = [
@@ -165,11 +165,9 @@ function MQParser (opts) {
 
 function parseCondition (conditionString) {
   conditionString = normalize(conditionString)
-  // eslint-disable-next-line security/detect-unsafe-regex
   let parts = /(?:(\d+px)\s+([<>]?=?)\s*?)?width(?:\s*?([<>]?=?)\s+(\d+px))?/.exec(
     conditionString
   )
-  if (!parts) return null
 
   let [
     ,
@@ -177,7 +175,7 @@ function parseCondition (conditionString) {
     leftComparatorPart,
     rightComparatorPart,
     rightValuePart
-  ] = parts
+  ] = parts || []
   if (!leftValuePart && !rightValuePart) return null
   if (!leftComparatorPart && !rightComparatorPart) return null
 

@@ -245,25 +245,83 @@ suites.forEach(([atRuleType, Utils]) => {
         })
       })
     })
+
+    describe('invalid media queries', () => {
+      [
+      '(width < )',
+      '( > width)',
+      '(width  200px)',
+      '(200px  width)',
+      '(200px => width)',
+      '(width =< 200px)',
+      ].forEach(weirdInputVariant => {
+        it(weirdInputVariant, async () => {
+          await Utils(weirdInputVariant).assertPreserved({ maxValue: 450 })
+        })
+      })
+    })
+
+    if (atRuleType === '@import') {
+      it('empty rule', async () => {
+        let input = `@import ;`
+        await assert(input, {minValue: 200}, input)
+      })
+
+      describe('handles import rules of all formats', () => {
+        [
+          // 'url(./file.css)',
+          'url(\'./file.css\')',
+          'url("./file.css")',
+          '\'./file.css\'',
+          '"./file.css"',
+        ].forEach(fileUrl => {
+          it(fileUrl, async () => {
+            let input = `@import ${fileUrl} (width >= 200px);`
+            let collapsedOutput = `@import ${fileUrl};`
+            await assert(input, {minValue: 200}, collapsedOutput)
+          })
+
+          let supportsQuery = `supports(display: flex)`;
+          it(`${fileUrl} ${supportsQuery}`, async () => {
+            let input = `@import ${fileUrl} ${supportsQuery} (width >= 200px);`
+            let collapsedOutput = `@import ${fileUrl} ${supportsQuery};`
+            await assert(input, {minValue: 200}, collapsedOutput)
+          })
+        })
+      })
+
+      describe('preserves import rules without media queries', () => {
+        [
+          '',
+          'supports(transform)'
+        ].forEach((noCondition) => {
+          let utils = Utils(noCondition)
+
+          it(noCondition, async () => {
+            await utils.assertPreserved()
+          })
+        })
+      })
+    }
   })
 })
 
 function MediaUtils (conditions) {
-  let template = `/* outside */ @media CONDS { /* inside */ }`
-  let input = template.replace('CONDS', conditions)
+  let template = mqList => `/* before */ @media ${mqList} { /* inside */ } /* after */`
+  let input = template(conditions)
 
   return {
-    assertRemoved: opts => assert(input, opts, '/* outside */'),
-    assertCollapsed: opts => assert(input, opts, '/* outside */ /* inside */'),
+    assertRemoved: opts => assert(input, opts, '/* before */ /* after */'),
+    assertCollapsed: opts => assert(input, opts, '/* before */ /* inside */ /* after */'),
     assertPreserved: opts => assert(input, opts, input),
     assertEdited: (newConditions, opts) =>
-      assert(input, opts, template.replace('CONDS', newConditions))
+      assert(input, opts, template(newConditions))
   }
 }
 
 function ImportUtils (conditions) {
-  let template = `/* before */ @import "./file.css" CONDS; /* after */`
-  let input = template.replace('CONDS', conditions)
+  let template = mqList => `/* before */ @import "./file.css" ${mqList}; /* after */`
+  let input = template(conditions)
 
   return {
     assertRemoved: opts => assert(input, opts, '/* before */ /* after */'),
@@ -271,7 +329,7 @@ function ImportUtils (conditions) {
       assert(input, opts, '/* before */ @import "./file.css"; /* after */'),
     assertPreserved: opts => assert(input, opts, input),
     assertEdited: (newConditions, opts) =>
-      assert(input, opts, template.replace('CONDS', newConditions))
+      assert(input, opts, template(newConditions))
   }
 }
 
