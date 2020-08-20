@@ -48,7 +48,11 @@ function filterMediaRule (mediaRule, mqParser) {
 }
 
 function MQParser (opts) {
-  opts = Object.assign({ minValue: -Infinity, maxValue: Infinity }, opts)
+  opts = Object.assign({
+    minValue: -Infinity,
+    maxValue: Infinity ,
+    filter: undefined,
+  }, opts)
 
   return parse
 
@@ -57,7 +61,8 @@ function MQParser (opts) {
   }
 
   function QueryList (queryListString) {
-    let queries = queryListString.split(/,\s?/).map(Query)
+    let queries = queryListString.split(/,\s?/)
+      .map(Query)
 
     return {
       match,
@@ -90,20 +95,23 @@ function MQParser (opts) {
       .filter(c => c.lt)
       .sort((c1, c2) => c1.value - c2.value)
       .shift()
-    let conditions = [gtCondition, ltCondition].filter(Boolean)
 
-    return {
+    let conditions = [gtCondition, ltCondition].filter(Boolean)
+    let query = {
+      source: queryString,
+      conditions: allConditions,
       match,
       render
     }
+    let filter = applyFilter(opts.filter, query)
+    return query
 
     function match () {
+      if (filter) return filter.match
       if (!conditions.length) return true
 
       let matchAll = conditions.length > 1
-      return (
-        validate() && conditions.some(condition => condition.match(matchAll))
-      )
+      return validate() && conditions.some(condition => condition.match(matchAll))
     }
 
     function validate () {
@@ -111,9 +119,9 @@ function MQParser (opts) {
       return gtCondition.value < ltCondition.value
     }
 
-    function render () {
+    function render() {
       return allConditions
-        .map(condition => condition.render())
+        .map((condition, index) => condition.render(filter && filter.conditions[index]))
         .filter(Boolean)
         .join(' and ')
     }
@@ -124,6 +132,7 @@ function MQParser (opts) {
     let { lt, gt, eq, value } = condition || {}
 
     return {
+      source: conditionString,
       match,
       render,
       lt,
@@ -148,7 +157,11 @@ function MQParser (opts) {
       return gt ? lteMaxValue : gteMinValue
     }
 
-    function render () {
+    function render (override) {
+      if (typeof override !== "undefined") {
+        return override && conditionString
+      }
+
       if (!condition) return conditionString
 
       let tests = []
@@ -194,5 +207,27 @@ function parseCondition (conditionString) {
     return str
       .replace('min-width:', 'width >=')
       .replace('max-width:', 'width <=')
+  }
+}
+
+function applyFilter (filter, query) {
+  if (!filter || typeof filter !== 'function') return
+
+  let override = filter(query)
+  if (typeof override === "undefined") return
+
+  let match = Boolean(override)
+  let conditions;
+  if (Array.isArray(override)) {
+    conditions = query.conditions.map((c, i) => override[i])
+  }
+  else {
+    conditions = Array(query.conditions.length)
+      .fill(Boolean(override))
+  }
+
+  return {
+    match,
+    conditions,
   }
 }

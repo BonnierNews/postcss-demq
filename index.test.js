@@ -303,6 +303,55 @@ suites.forEach(([atRuleType, Utils]) => {
         })
       })
     }
+
+    describe('filter', () => {
+      let queries =
+        '(width < 200px), ' +
+        '(width >= 200px) and (width < 400px), ' +
+        '(width >= 400px)';
+
+      let [query1, query2, query3] = queries.split(', ')
+      let utils = Utils(queries)
+
+      it('removes query', async () => {
+        await utils.assertRemoved({filter: () => false})
+      })
+
+      it('preserves query', async () => {
+        await utils.assertPreserved({minValue: 600, filter: () => true})
+      })
+
+      it('preserves all conditions of query', async () => {
+        await utils.assertPreserved({maxValue: 100, filter: () => [true, true]})
+      })
+
+      it('preserves some conditions of query', async () => {
+        let queriesCondition1 = '(width < 200px), (width >= 200px), (width >= 400px)'
+        await utils.assertEdited(queriesCondition1, {maxValue: 100, filter: () => [true, false]})
+
+        let queriesCondition2 = '(width < 400px)'
+        await utils.assertEdited(queriesCondition2, {maxValue: 100, filter: () => [false, true]})
+      })
+
+      it('collapses query', async () => {
+        await utils.assertCollapsed({filter: () => [false, false]})
+      })
+
+      it('conditionally filters on query data', async () => {
+        await utils.assertEdited(query1, {filter: query => query.source === query1})
+        await utils.assertEdited(`${query2}, ${query3}`, {filter: query => query.source !== query1})
+      })
+
+      it('processes irrelevant queries as usual', async () => {
+        let stripSelectedQueries = query => {
+          if (query.source === query1) return false
+          if (query.source === query3) return false
+        }
+        let [condition1, condition2] = query2.split(' and ')
+        await utils.assertEdited(condition1, {maxValue: 300, filter: stripSelectedQueries})
+        await utils.assertEdited(condition2, {minValue: 300, filter: stripSelectedQueries})
+      })
+    })
   })
 })
 
