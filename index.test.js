@@ -346,7 +346,7 @@ suites.forEach(([atRuleType, Utils]) => {
         await utils.assertEdited(`${query2}, ${query3}`, {filter: query => query.source !== query1})
       })
 
-      it('processes irrelevant queries as usual', async () => {
+      it('auto process on irrelevant queries', async () => {
         let stripSelectedQueries = query => {
           if (query.source === query1) return false
           if (query.source === query3) return false
@@ -354,6 +354,31 @@ suites.forEach(([atRuleType, Utils]) => {
         let [condition1, condition2] = query2.split(' and ')
         await utils.assertEdited(condition1, {maxValue: 300, filter: stripSelectedQueries})
         await utils.assertEdited(condition2, {minValue: 300, filter: stripSelectedQueries})
+      })
+
+      it('auto process on irrelevant conditions', async () => {
+        let autoQuery = '(width > 100px) and (width > 200px) and (width < 400px) and (width < 500px)'
+        let autoUtils = Utils(autoQuery)
+        await autoUtils.assertEdited('(width > 200px) and (width < 400px) and (width < 500px)', {
+          minValue: 150,
+          maxValue: 450,
+          filter: () => [undefined, undefined, false, true]
+        })
+        await autoUtils.assertEdited('(width > 100px) and (width < 400px)', {
+          minValue: 150,
+          maxValue: 450,
+          filter: () => [true, false, undefined, undefined]
+        })
+      })
+
+      it('auto process on all conditions', async () => {
+        let autoQuery = '(width >= 200px) and (width <= 400px)'
+        let autoUtils = Utils(autoQuery)
+        let autoAll = () => [undefined, undefined]
+        await autoUtils.assertRemoved({maxValue: 100, filter: autoAll})
+        await autoUtils.assertPreserved({filter: autoAll})
+        await autoUtils.assertEdited('(width <= 400px)', {minValue: 250, filter: autoAll})
+        await autoUtils.assertCollapsed({minValue: 250, maxValue: 350, filter: autoAll})
       })
     })
   })

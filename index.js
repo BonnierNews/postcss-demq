@@ -104,6 +104,7 @@ function MQParser (opts) {
       render
     }
     let filter = applyFilter(opts.filter, query)
+
     return query
 
     function match () {
@@ -214,8 +215,6 @@ function applyFilter (filter, query) {
   if (!filter || typeof filter !== 'function') return
 
   let override = filter(query)
-  if (typeof override === "undefined") return
-
   let match = Boolean(override)
   let conditions;
   if (Array.isArray(override)) {
@@ -223,8 +222,10 @@ function applyFilter (filter, query) {
   }
   else {
     conditions = Array(query.conditions.length)
-      .fill(Boolean(override))
+      .fill(override)
   }
+
+  if (conditions.every(c => typeof c === "undefined")) return
 
   return {
     match,
