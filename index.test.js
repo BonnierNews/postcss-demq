@@ -136,6 +136,10 @@ suites.forEach(([atRuleType, Utils]) => {
           await utils.assertCollapsed({ minValue: 200, maxValue: 400 })
         })
 
+        it('removes query with min width and max width within option min value and max value', async () => {
+          await utils.assertCollapsed({ minValue: 250, maxValue: 350 })
+        })
+
         it('preserves partial query when lower overlap', async () => {
           await utils.assertEdited(condition1, {
             minValue: 100,
