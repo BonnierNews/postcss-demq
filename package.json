@@ -52,7 +52,13 @@
       "plugin:jest/recommended"
     ],
     "rules": {
-      "jest/expect-expect": "off"
+      "jest/expect-expect": "off",
+      "strict": "error",
+      "no-var": "error",
+      "prefer-const": "error",
+      "comma-dangle": ["warn", "always-multiline"],
+      "quotes": ["warn", "single"],
+      "semi": ["warn", "always"]
     }
   },
   "jest": {
