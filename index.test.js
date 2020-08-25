@@ -58,6 +58,10 @@ suites.forEach(([atRuleType, Utils]) => {
           await utils.assertCollapsed({ minValue: 300 })
         })
 
+        it('preserves query with min width equal to option max value', async () => {
+          await utils.assertPreserved({ maxValue: 200 })
+        })
+
         it('removes query with min width equal to option min value', async () => {
           await utils.assertCollapsed({ minValue: 200 })
         })
@@ -110,6 +114,10 @@ suites.forEach(([atRuleType, Utils]) => {
 
         it('removes query with max width equal to option max value', async () => {
           await utils.assertCollapsed({ maxValue: 400 })
+        })
+
+        it('preserves query with max width equal to option min value', async () => {
+          await utils.assertPreserved({ minValue: 400 })
         })
 
         it('removes query with max width greater than option max value', async () => {
@@ -359,7 +367,7 @@ suites.forEach(([atRuleType, Utils]) => {
       it('auto process on irrelevant conditions', async () => {
         let autoQuery = '(width > 100px) and (width > 200px) and (width < 400px) and (width < 500px)'
         let autoUtils = Utils(autoQuery)
-        await autoUtils.assertEdited('(width > 200px) and (width < 400px) and (width < 500px)', {
+        await autoUtils.assertEdited('(width > 200px) and (width < 500px)', {
           minValue: 150,
           maxValue: 450,
           filter: () => [undefined, undefined, false, true]

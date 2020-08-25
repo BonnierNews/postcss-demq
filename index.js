@@ -54,6 +54,11 @@ function MQParser (opts) {
     filter: undefined,
   }, opts)
 
+  const filterRange = {
+    start: opts.minValue,
+    end: opts.maxValue,
+  };
+
   return parse
 
   function parse (params) {
@@ -96,6 +101,11 @@ function MQParser (opts) {
       .sort((c1, c2) => c1.value - c2.value)
       .shift()
 
+    const queryRange = {
+      start: gtCondition ? gtCondition.value : -Infinity,
+      end: ltCondition ? ltCondition.value : Infinity,
+    };
+
     let conditions = [gtCondition, ltCondition].filter(Boolean)
     let query = {
       source: queryString,
@@ -111,8 +121,8 @@ function MQParser (opts) {
       if (filter) return filter.match
       if (!conditions.length) return true
 
-      let matchAll = conditions.length > 1
-      return validate() && conditions.some(condition => condition.match(matchAll))
+      return validate() &&
+        isIntersecting(queryRange, filterRange, gtCondition && gtCondition.eq, ltCondition && ltCondition.eq);
     }
 
     function validate () {
@@ -134,28 +144,11 @@ function MQParser (opts) {
 
     return {
       source: conditionString,
-      match,
       render,
       lt,
       gt,
       eq,
       value
-    }
-
-    function match (matchAll) {
-      /* istanbul ignore next */
-      if (!condition) return true
-
-      let [gteMinValue, lteMaxValue] = [
-        [value > opts.minValue, eq && value === opts.minValue],
-        [value < opts.maxValue, eq && value === opts.maxValue]
-      ].map(tests => tests.some(test => test))
-
-      if (matchAll) {
-        return lteMaxValue && gteMinValue
-      }
-
-      return gt ? lteMaxValue : gteMinValue
     }
 
     function render (override) {
@@ -231,4 +224,9 @@ function applyFilter (filter, query) {
     match,
     conditions,
   }
+}
+
+function isIntersecting (r1, r2, includeStart = true, includeEnd = true) {
+  return (r2.end > r1.start || (includeStart && r2.end === r1.start)) &&
+    (r2.start < r1.end || (includeEnd && r2.start === r1.end));
 }
