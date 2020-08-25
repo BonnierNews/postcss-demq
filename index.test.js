@@ -26,7 +26,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertRemoved({ maxValue: 100 });
         });
 
-        it('removes query with min width lesser than option min value', async () => {
+        it('collapses block with min width lesser than option min value', async () => {
           await utils.assertCollapsed({ minValue: 300 });
         });
 
@@ -56,7 +56,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertRemoved({ maxValue: 100 });
         });
 
-        it('removes query with min width lesser than option min value', async () => {
+        it('collapses block with min width lesser than option min value', async () => {
           await utils.assertCollapsed({ minValue: 300 });
         });
 
@@ -64,7 +64,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertPreserved({ maxValue: 200 });
         });
 
-        it('removes query with min width equal to option min value', async () => {
+        it('collapses block with min width equal to option min value', async () => {
           await utils.assertCollapsed({ minValue: 200 });
         });
 
@@ -93,7 +93,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertRemoved({ minValue: 400 });
         });
 
-        it('removes query with max width greater than option max value', async () => {
+        it('collapses block with max width greater than option max value', async () => {
           await utils.assertCollapsed({ maxValue: 300 });
         });
 
@@ -115,7 +115,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertPreserved({ maxValue: 500 });
         });
 
-        it('removes query with max width equal to option max value', async () => {
+        it('collapses block with max width equal to option max value', async () => {
           await utils.assertCollapsed({ maxValue: 400 });
         });
 
@@ -123,7 +123,7 @@ it('leaves unscoped css untouched', async () => {
           await utils.assertPreserved({ minValue: 400 });
         });
 
-        it('removes query with max width greater than option max value', async () => {
+        it('collapses block with max width greater than option max value', async () => {
           await utils.assertCollapsed({ maxValue: 300 });
         });
 
@@ -142,11 +142,11 @@ it('leaves unscoped css untouched', async () => {
         const utils = Utils(alternateSyntax || gteLteWidthVariant);
         const [condition1, condition2] = (alternateSyntax || gteLteWidthVariant).split(' and ');
 
-        it('removes query with min width and max width equal to option max value', async () => {
+        it('collapses block with min width and max width equal to option max value', async () => {
           await utils.assertCollapsed({ minValue: 200, maxValue: 400 });
         });
 
-        it('removes query with min width and max width within option min value and max value', async () => {
+        it('collapses block with min width and max width covering option min value and max value', async () => {
           await utils.assertCollapsed({ minValue: 250, maxValue: 350 });
         });
 
@@ -336,7 +336,7 @@ it('leaves unscoped css untouched', async () => {
         await utils.assertEdited(queriesCondition2, {maxValue: 100, filter: () => [false, true]});
       });
 
-      it('collapses query', async () => {
+      it('collapses block', async () => {
         await utils.assertCollapsed({filter: () => [false, false]});
       });
 
