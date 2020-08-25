@@ -6,7 +6,7 @@
 
 [PostCSS] plugin to filter media queries.
 
-Primary use case is transforming a fully responsive stylesheet into a smaller sheet with styles for a specific device.
+The primary use case is transforming a fully responsive stylesheet into a smaller sheet with styles for a specific device.
 
 ```css
 .component { content: "generic styles" }
@@ -42,7 +42,7 @@ Processed with options `{maxValue: 767}` will result in
 
 ## Features
 
-Plugin can transform stylesheet following ways:
+The plugin can transform a stylesheet in the following ways:
 
 - remove entire block - no intersection between mq range and option range
 - preserve partial query - partial intersection between mq range and option range
