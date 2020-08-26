@@ -44,10 +44,10 @@ Processed with options `{maxValue: 767}` will result in
 
 The plugin can transform a stylesheet in the following ways:
 
-- remove entire block - no intersection between mq range and option range
+- remove block - no intersection between mq range and option range
 - preserve partial query - partial intersection between mq range and option range
 - preserve query - mq range is completely within option range
-- collapse query - option range is completely within mq range
+- collapse block - option range is completely within mq range
 
 > Only supports media queries based on the `width` CSS media feature
 
