@@ -1,183 +1,192 @@
-let postcss = require('postcss')
+'use strict';
+
+const postcss = require('postcss');
 
 module.exports = postcss.plugin('postcss-demq', opts => {
-  opts = opts || {}
-  let mqParser = MQParser(opts)
+  opts = opts || {};
+  const mqParser = MQParser(opts);
 
   return root => {
-    root.walkAtRules('import', atRule => filterImportRule(atRule, mqParser))
-    root.walkAtRules('media', atRule => filterMediaRule(atRule, mqParser))
-  }
-})
+    root.walkAtRules('import', atRule => filterImportRule(atRule, mqParser));
+    root.walkAtRules('media', atRule => filterMediaRule(atRule, mqParser));
+  };
+});
 
 function filterImportRule (importRule, mqParser) {
-  let parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
-    importRule.params
-  )
-  let [, filePath, supportsQuery, paramsString] = parts || []
-  if (!paramsString || !paramsString.trim()) return
+  const parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
+    importRule.params,
+  );
+  const [, filePath, supportsQuery, paramsString] = parts || [];
+  if (!paramsString || !paramsString.trim()) return;
 
-  let params = mqParser(paramsString)
+  const params = mqParser(paramsString);
 
   if (!params.match()) {
-    importRule.remove()
-    return
+    importRule.remove();
+    return;
   }
 
   importRule.params = [filePath, supportsQuery, params.render()]
     .filter(Boolean)
     .map(partString => partString.trim())
-    .join(' ')
+    .join(' ');
 }
 
 function filterMediaRule (mediaRule, mqParser) {
-  let params = mqParser(mediaRule.params)
+  const params = mqParser(mediaRule.params);
 
   if (!params.match()) {
-    mediaRule.remove()
-    return
+    mediaRule.remove();
+    return;
   }
 
-  let newParams = params.render()
+  const newParams = params.render();
   if (newParams) {
-    mediaRule.params = newParams
-    return
+    mediaRule.params = newParams;
+    return;
   }
 
-  mediaRule.replaceWith(mediaRule.nodes)
+  mediaRule.replaceWith(mediaRule.nodes);
 }
 
 function MQParser (opts) {
-  opts = Object.assign({ minValue: -Infinity, maxValue: Infinity }, opts)
+  opts = Object.assign({
+    minValue: -Infinity,
+    maxValue: Infinity ,
+    filter: undefined,
+  }, opts);
 
-  return parse
+  const filterRange = {
+    start: opts.minValue,
+    end: opts.maxValue,
+  };
+
+  return parse;
 
   function parse (params) {
-    return QueryList(params)
+    return QueryList(params);
   }
 
   function QueryList (queryListString) {
-    let queries = queryListString.split(/,\s?/).map(Query)
+    const queries = queryListString.split(/,\s?/)
+      .map(Query);
 
     return {
       match,
-      render
-    }
+      render,
+    };
 
     function match () {
-      return queries.some(query => query.match())
+      return queries.some(query => query.match());
     }
 
     function render () {
       return queries
         .map(query => query.render())
         .filter(Boolean)
-        .join(', ')
+        .join(', ');
     }
   }
 
   function Query (queryString) {
-    let allConditions = queryString
+    const allConditions = queryString
       .replace(/([<=>]+)\s+width\s+([<=>]+)/, '$1 width) and (width $2')
       .split(/\s+and\s+/)
-      .map(Condition)
+      .map(Condition);
 
-    let gtCondition = allConditions
+    const gtCondition = allConditions
       .filter(c => c.gt)
       .sort((c1, c2) => c1.value - c2.value)
-      .pop()
-    let ltCondition = allConditions
+      .pop();
+    const ltCondition = allConditions
       .filter(c => c.lt)
       .sort((c1, c2) => c1.value - c2.value)
-      .shift()
-    let conditions = [gtCondition, ltCondition].filter(Boolean)
+      .shift();
 
-    return {
+    const queryRange = {
+      start: gtCondition ? gtCondition.value : -Infinity,
+      end: ltCondition ? ltCondition.value : Infinity,
+    };
+
+    const conditions = [gtCondition, ltCondition].filter(Boolean);
+    const query = {
+      source: queryString,
+      conditions: allConditions,
       match,
-      render
-    }
+      render,
+    };
+    const filter = applyFilter(opts.filter, query);
+
+    return query;
 
     function match () {
-      if (!conditions.length) return true
+      if (filter) return filter.match;
+      if (!conditions.length) return true;
 
-      let matchAll = conditions.length > 1
-      return (
-        validate() && conditions.some(condition => condition.match(matchAll))
-      )
+      return validate() &&
+        isIntersecting(queryRange, filterRange, gtCondition && gtCondition.eq, ltCondition && ltCondition.eq);
     }
 
     function validate () {
-      if (conditions.length < 2) return conditions.length
-      return gtCondition.value < ltCondition.value
+      if (conditions.length < 2) return conditions.length;
+      return gtCondition.value < ltCondition.value;
     }
 
-    function render () {
+    function render() {
       return allConditions
-        .map(condition => condition.render())
+        .map((condition, index) => condition.render(filter && filter.conditions[index]))
         .filter(Boolean)
-        .join(' and ')
+        .join(' and ');
     }
   }
 
   function Condition (conditionString) {
-    let condition = parseCondition(conditionString)
-    let { lt, gt, eq, value } = condition || {}
+    const condition = parseCondition(conditionString);
+    const { lt, gt, eq, value } = condition || {};
 
     return {
-      match,
+      source: conditionString,
       render,
       lt,
       gt,
       eq,
-      value
-    }
+      value,
+    };
 
-    function match (matchAll) {
-      /* istanbul ignore next */
-      if (!condition) return true
-
-      let [gteMinValue, lteMaxValue] = [
-        [value > opts.minValue, eq && value === opts.minValue],
-        [value < opts.maxValue, eq && value === opts.maxValue]
-      ].map(tests => tests.some(test => test))
-
-      if (matchAll) {
-        return lteMaxValue && gteMinValue
+    function render (override) {
+      if (typeof override !== 'undefined') {
+        return override && conditionString;
       }
 
-      return gt ? lteMaxValue : gteMinValue
-    }
+      if (!condition) return conditionString;
 
-    function render () {
-      if (!condition) return conditionString
-
-      let tests = []
-      if (gt) tests.push(value > opts.minValue)
-      if (lt) tests.push(value < opts.maxValue)
+      const tests = [];
+      if (gt) tests.push(value > opts.minValue);
+      if (lt) tests.push(value < opts.maxValue);
       if (!eq) {
-        tests.push(gt ? value === opts.minValue : value === opts.maxValue)
+        tests.push(gt ? value === opts.minValue : value === opts.maxValue);
       }
-      let preserveQuery = tests.some(test => test)
-      return preserveQuery && conditionString
+      const preserveQuery = tests.some(test => test);
+      return preserveQuery && conditionString;
     }
   }
 }
 
 function parseCondition (conditionString) {
-  conditionString = normalize(conditionString)
-  let parts = /(?:(\d+px)\s+([<>]?=?)\s*?)?width(?:\s*?([<>]?=?)\s+(\d+px))?/.exec(
-    conditionString
-  )
+  conditionString = normalize(conditionString);
+  const parts = /(?:(\d+px)\s+([<>]?=?)\s*?)?width(?:\s*?([<>]?=?)\s+(\d+px))?/.exec(
+    conditionString,
+  );
 
-  let [
+  const [
     ,
     leftValuePart,
     leftComparatorPart,
     rightComparatorPart,
-    rightValuePart
-  ] = parts || []
-  if (!leftValuePart && !rightValuePart) return null
-  if (!leftComparatorPart && !rightComparatorPart) return null
+    rightValuePart,
+  ] = parts || [];
+  if (!leftValuePart && !rightValuePart) return null;
+  if (!leftComparatorPart && !rightComparatorPart) return null;
 
   return {
     lt: leftComparatorPart
@@ -187,12 +196,39 @@ function parseCondition (conditionString) {
       ? leftComparatorPart.includes('<')
       : rightComparatorPart.includes('>'),
     eq: (leftComparatorPart || rightComparatorPart).includes('='),
-    value: parseInt(leftValuePart || rightValuePart)
-  }
+    value: parseInt(leftValuePart || rightValuePart),
+  };
 
   function normalize (str) {
     return str
       .replace('min-width:', 'width >=')
-      .replace('max-width:', 'width <=')
+      .replace('max-width:', 'width <=');
   }
+}
+
+function applyFilter (filter, query) {
+  if (!filter || typeof filter !== 'function') return;
+
+  const override = filter(query);
+  const match = Boolean(override);
+  let conditions;
+  if (Array.isArray(override)) {
+    conditions = query.conditions.map((c, i) => override[i]);
+  }
+  else {
+    conditions = Array(query.conditions.length)
+      .fill(override);
+  }
+
+  if (conditions.every(c => typeof c === 'undefined')) return;
+
+  return {
+    match,
+    conditions,
+  };
+}
+
+function isIntersecting (r1, r2, includeStart = true, includeEnd = true) {
+  return (r2.end > r1.start || (includeStart && r2.end === r1.start)) &&
+    (r2.start < r1.end || (includeEnd && r2.start === r1.end));
 }
