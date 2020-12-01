@@ -289,16 +289,6 @@ it('leaves unscoped css untouched', async () => {
         await queryListUtils.assertEdited(queries[1], { minValue: 200, maxValue: 500 });
         await queryListUtils.assertEdited(queries[2], { minValue: 500 });
       });
-
-      it('filters queries separately apart from unrelated query ', async () => {
-        const queryList = (...queries) => queries.join(', ');
-        const unrelatedQuery = '(orientation: portrait)';
-        const queryListUtils = Utils(queryList(unrelatedQuery, ...queries));
-
-        await queryListUtils.assertEdited(queryList(unrelatedQuery, queries[0]), { maxValue: 200 });
-        await queryListUtils.assertEdited(queryList(unrelatedQuery, queries[1]), { minValue: 200, maxValue: 500 });
-        await queryListUtils.assertEdited(queryList(unrelatedQuery, queries[2]), { minValue: 500 });
-      });
     });
 
     if (atRuleType === '@import') {
