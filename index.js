@@ -52,7 +52,7 @@ function filterMediaRule (mediaRule, mqParser) {
 function MQParser (opts) {
   opts = Object.assign({
     minValue: -Infinity,
-    maxValue: Infinity ,
+    maxValue: Infinity,
     filter: undefined,
   }, opts);
 
@@ -82,6 +82,7 @@ function MQParser (opts) {
 
     function render () {
       return queries
+        .filter(query => query.match())
         .map(query => query.render())
         .filter(Boolean)
         .join(', ');
@@ -128,7 +129,7 @@ function MQParser (opts) {
     }
 
     function validate () {
-      if (conditions.length < 2) return conditions.length;
+      if (conditions.length < 2) return !!conditions.length;
       return gtCondition.value < ltCondition.value;
     }
 
