@@ -202,10 +202,22 @@ it('leaves unscoped css untouched', async () => {
       '(min-height: 100px)',
     ].forEach(unrelatedQueryVariant => {
       describe(unrelatedQueryVariant, () => {
-        const utils = Utils(unrelatedQueryVariant);
+        const queryUtils = Utils(unrelatedQueryVariant);
+        const conditionUtils = Utils(`(width >= 200px) and ${unrelatedQueryVariant} and (width <= 400px)`);
 
         it('leaves unrelated query untouched', async () => {
-          await utils.assertPreserved({ minValue: 200, maxValue: 400 });
+          await queryUtils.assertPreserved({ minValue: 200, maxValue: 400 });
+        });
+
+        it('leaves unrelated condition along but collapses matching conditions', async () => {
+          await conditionUtils.assertEdited(unrelatedQueryVariant, { minValue: 200, maxValue: 400 });
+          await conditionUtils.assertEdited(`${unrelatedQueryVariant} and (width <= 400px)`, { minValue: 200 });
+          await conditionUtils.assertEdited(`(width >= 200px) and ${unrelatedQueryVariant}`, { maxValue: 400 });
+        });
+
+        it('removes unrelated condition along with non-matching condition', async () => {
+          await conditionUtils.assertRemoved({ maxValue: 100 });
+          await conditionUtils.assertRemoved({ minValue: 500 });
         });
       });
     });
@@ -261,6 +273,21 @@ it('leaves unscoped css untouched', async () => {
         it(weirdInputVariant, async () => {
           await Utils(weirdInputVariant).assertPreserved({ maxValue: 450 });
         });
+      });
+    });
+
+    describe('multiple queries in query list', () => {
+      const queries = [
+        '(width <= 100px)',
+        '(width >= 300px) and (width <= 400px)',
+        '(width >= 600px)',
+      ];
+      it('filters queries separately', async () => {
+        const queryListUtils = Utils(queries.join(', '));
+
+        await queryListUtils.assertEdited(queries[0], { maxValue: 200 });
+        await queryListUtils.assertEdited(queries[1], { minValue: 200, maxValue: 500 });
+        await queryListUtils.assertEdited(queries[2], { minValue: 500 });
       });
     });
 
