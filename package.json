@@ -9,35 +9,24 @@
     "media-queries"
   ],
   "scripts": {
-    "test": "jest-ci --coverage && eslint-ci ."
+    "test": "jest --coverage && eslint ."
   },
   "author": "Bonnier News",
   "license": "MIT",
   "repository": "BonnierNews/demq",
   "engines": {
-    "node": ">=10.0.0"
-  },
-  "dependencies": {
-    "postcss": "^7.0.0"
+    "node": ">=14.0.0"
   },
   "devDependencies": {
-    "clean-publish": "^1.1.8",
-    "eslint": "^7.6.0",
-    "eslint-ci": "^1.0.0",
-    "eslint-plugin-jest": "^23.20.0",
-    "husky": "^4.2.5",
-    "jest": "^26.2.2",
-    "jest-ci": "^0.1.1",
-    "jest-cli": "^26.2.2",
-    "lint-staged": "^10.2.11"
+    "clean-publish": "^3.4.5",
+    "eslint": "^8.7.0",
+    "eslint-plugin-jest": "^25.7.0",
+    "jest": "^27.4.7",
+    "jest-cli": "^27.4.7",
+    "postcss": "^8.4.5"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": "eslint --fix"
+  "peerDependencies": {
+    "postcss": "^8.4.5"
   },
   "eslintConfig": {
     "parserOptions": {
@@ -53,6 +42,7 @@
     ],
     "rules": {
       "jest/expect-expect": "off",
+      "jest/valid-title": "off",
       "strict": "error",
       "no-var": "error",
       "prefer-const": "error",

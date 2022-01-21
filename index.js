@@ -1,16 +1,17 @@
 'use strict';
 
-const postcss = require('postcss');
+module.exports.postcss = true;
 
-module.exports = postcss.plugin('postcss-demq', opts => {
-  opts = opts || {};
+module.exports = (opts = {}) => {
   const mqParser = MQParser(opts);
-
-  return root => {
-    root.walkAtRules('import', atRule => filterImportRule(atRule, mqParser));
-    root.walkAtRules('media', atRule => filterMediaRule(atRule, mqParser));
+  return {
+    postcssPlugin: 'postcss-demq',
+    Once(root) {
+      root.walkAtRules('import', (atRule) => filterImportRule(atRule, mqParser));
+      root.walkAtRules('media', (atRule) => filterMediaRule(atRule, mqParser));
+    },
   };
-});
+};
 
 function filterImportRule (importRule, mqParser) {
   const parts = /((?:url\()?(?:".*?"|'.*?')\)?\s*)(\w+\(.+?\)\s+)?(.*)/.exec(
