@@ -1,6 +1,6 @@
 # PostCSS demq
 
-![](https://github.com/BonnierNews/postcss-demq/workflows/Run%20tests/badge.svg)
+![](https://github.com/BonnierNews/postcss-demq/workflows/Tests/badge.svg)
 
 [PostCSS]: https://github.com/postcss/postcss
 
