@@ -9,7 +9,8 @@
     "media-queries"
   ],
   "scripts": {
-    "test": "jest --coverage && eslint ."
+    "test": "jest --coverage && eslint .",
+    "test-node-10": "jest --coverage"
   },
   "author": "Bonnier News",
   "license": "MIT",
