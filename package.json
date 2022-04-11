@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": "BonnierNews/demq",
   "engines": {
-    "node": ">=14.0.0"
+    "node": "^10 || ^12 || >=14"
   },
   "devDependencies": {
     "clean-publish": "^3.4.5",
@@ -27,7 +27,7 @@
     "postcss": "^8.4.12"
   },
   "peerDependencies": {
-    "postcss": "^10 || ^12 || >=14"
+    "postcss": "^8.0.0"
   },
   "eslintConfig": {
     "parserOptions": {
