@@ -1,8 +1,8 @@
-# PostCSS demq [![Build Status][ci-img]][ci]
+# PostCSS demq
+
+![](https://github.com/BonnierNews/postcss-demq/workflows/Tests/badge.svg)
 
 [PostCSS]: https://github.com/postcss/postcss
-[ci-img]:  https://travis-ci.org/bonniernews/postcss-demq.svg
-[ci]:      https://travis-ci.org/bonniernews/postcss-demq
 
 [PostCSS] plugin to filter media queries.
 
