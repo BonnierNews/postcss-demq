@@ -1,6 +1,6 @@
 {
   "name": "postcss-demq",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "PostCSS plugin to filter media queries",
   "keywords": [
     "postcss",
@@ -19,14 +19,14 @@
   },
   "devDependencies": {
     "clean-publish": "^3.4.5",
-    "eslint": "^8.7.0",
+    "eslint": "^8.13.0",
     "eslint-plugin-jest": "^25.7.0",
-    "jest": "^27.4.7",
-    "jest-cli": "^27.4.7",
-    "postcss": "^8.4.5"
+    "jest": "^27.5.1",
+    "jest-cli": "^27.5.1",
+    "postcss": "^8.4.12"
   },
   "peerDependencies": {
-    "postcss": "^8.4.5"
+    "postcss": "^8.0.0"
   },
   "eslintConfig": {
     "parserOptions": {
