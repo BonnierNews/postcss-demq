@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-04-11
+### Changed
+- Updated to use PostCSS v8
+- Updated to match newer version of `postcss-plugin-boilerplate`
+
 ## [0.2.1] - 2020-12-03
 ### Fixed
 - Conditions in list of differently matching media queries do not leak
